@@ -1,0 +1,17 @@
+Package: bnshiny
+Type: Package
+Title: Shiny for BioNavigator
+Version: 1.0
+Date: 2015-11-13
+Author: Alexandre Maurel
+Maintainer: Alexandre Maurel <alexandre.maurel@gmail.com>
+Description: Enable BioNavigator to run ROperator, RScript ... and shiny app
+License: What license is it under?
+Suggests:
+    testthat
+Imports:
+    rtson,
+    shiny,
+    httr,
+    Biobase
+RoxygenNote: 5.0.1
