@@ -1,18 +1,7 @@
-  
+   
+
 bnshiny::startBNShiny()
-
-
-import(R6)
-import(jsonlite)
-import(httpuv)
-import(httr)
-import(shiny)
-
-
-
-import(Biobase)
-import(rtson)
-
+ 
 ######################################################################################
 my.pkgs <- c("shiny")
 pkgs <- pkgDep(my.pkgs, suggests = TRUE, enhances=FALSE)

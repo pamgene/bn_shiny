@@ -1,24 +1,24 @@
 library(R6)
 library(rtson)
- 
+
 #' ServerClient 
 #'
 ServerClient <- R6Class("ServerClient",
-    public = list( 
-      getOperatorSourceCode = function(operatorId){}
-    )
+                        public = list( 
+                          getOperatorSourceCode = function(operatorId){}
+                        )
 )
 
 #' ServerClientDev 
 #'
 ServerClientDev <- R6Class("ServerClientDev",
-   inherit = ServerClient,
-   public = list( 
-     getOperatorSourceCode = function(operatorId){
-       sourceCode <- readUTF8(operatorId)
-       return (sourceCode)
-     }
-   )
+                           inherit = ServerClient,
+                           public = list( 
+                             getOperatorSourceCode = function(operatorId){
+                               sourceCode <- readUTF8(operatorId)
+                               return (sourceCode)
+                             }
+                           )
 )
 
 #' BNClient 
@@ -36,19 +36,14 @@ BNClient <- R6Class(
     },
     getQueryUrl = function() paste0(self$uri,"/query"),
     getOperatorProperties = function(context){
-      print("getOperatorProperties 1")
       url = self$getQueryUrl()
       params = list(type=tson.scalar("operatorProperties"), context=context$toTson())
-      print("getOperatorProperties 2")
-      print(params)
-      print(toTSON(params))
-      response <- httr::POST(url, httr::add_headers('Content-Type' = 'application/octet-stream'), body=toTSON(params))
+      
+      response <- httr::POST(url, httr::add_headers('Content-Type' = 'application/octet-stream'), body=toTSON(params), httr::verbose())
       if (response$status != 200){
-        print("getOperatorProperties response$status != 200")
         self$errorResponse("getOperatorProperties", response)
       }
       json = httr::content(response, "raw")
-      print("getOperatorProperties 3")
       return (fromTSON(json))
     },
     getOperatorPropertiesAsMap = function(context){

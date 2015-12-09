@@ -130,7 +130,7 @@ shinyServerShowResults <- function(input, output, session, client) {
   properties = reactive({print("reactive getProperties") ; client$getProperties()}) 
   folder = reactive({print("reactive getFolder") ; client$getFolder()})
    
-  listResult = reactive({print("reactive listResult") ; internal_dataFrameOperator(data(), properties=properties(), folder=folder())}) 
+  listResult = reactive({print("reactive listResult") ; p=properties(); internal_dataFrameOperator(data(), properties=p , folder=folder())}) 
   
   aRunDataList = reactive({print("reactive aRunDataList") ; listResult()$showResults})
   #   mapProperties = client$getPropertiesAsMap()

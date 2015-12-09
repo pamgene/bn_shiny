@@ -36,7 +36,7 @@ OperatorServer<- R6Class(
     operatorPropertiesHttpHandler = function(request){
       if (!inherits(request, "HttpRequest"))
         stop("'request' is not a HttpRequest object.")
-      body = toJSON(self$operator$operatorProperties())
+      body = jsonlite::toJSON(self$operator$operatorProperties())
       return(list(status = 200L,
                   headers = list('Content-Type' = 'application/json'),
                   body = body))
