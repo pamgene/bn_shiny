@@ -3,7 +3,7 @@
 #' @export
 startBNShiny = function(){
   options(shiny.launch.browser=FALSE)
-  options(shiny.maxRequestSize = 100*1024^2)
+  options(shiny.maxRequestSize = 1024^3)
   
   bn <- BNClient$new("http://192.168.1.43:6040")
   operatorServerBuilder <- OperatorServerBuilderImpl$new(bn)
