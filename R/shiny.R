@@ -5,7 +5,7 @@ startBNShiny = function(){
   options(shiny.launch.browser=FALSE)
   options(shiny.maxRequestSize = 1024^3)
   
-  bn <- BNClient$new("http://192.168.1.43:6040")
+  bn <- BNClient$new("http://127.0.0.1:6040")
   operatorServerBuilder <- OperatorServerBuilderImpl$new(bn)
   appDispatcher <- OperatorServerDispatcher$new(operatorServerBuilder)
   bnShinyApp <- ShinySessionApp$new(appDispatcher)
