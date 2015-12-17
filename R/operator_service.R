@@ -105,30 +105,31 @@ OperatorServer<- R6Class(
     curveFitOperatorHttpHandler = function(request){
       if (!inherits(request, "HttpRequest"))
         stop("'request' is not a HttpRequest object.")
-      
       bytes = request$read()
- 
       params = fromTSON(bytes)
- 
-      
-      
       curveFittingParam = CurveFittingTableParam$new(data.frame.fromTSON(params$data),params$xValues, params$properties)
       result = self$operator$curveFittingTable(curveFittingParam)
-  
       body = toTSON(result)
       return(list(status = 200L,
                   headers = list('Content-Type' = 'application/octet-stream'),
                   body = body))
-      
     },
     showResultsHttpHandler = function(request){
       if (!inherits(request, "HttpRequest"))
         stop("'request' is not a HttpRequest object.")
       params = fromTSON(request$read())
-      
       showResultParam = ShowResultParam$new(params$properties,params$folder)
-       
       self$operator$showResults(showResultParam)
+      return(list(status = 200L,
+                  headers = list('Content-Type' = 'application/json'),
+                  body = ''))
+    },
+    runAppHttpHandler = function(request){
+      if (!inherits(request, "HttpRequest"))
+        stop("'request' is not a HttpRequest object.")
+      query = request$queryParameters()
+      context = BNContext$new(query$workflowId, as.integer(query$stepId), query$contextId, self$client)
+      self$operator$runApp(context)
       return(list(status = 200L,
                   headers = list('Content-Type' = 'application/json'),
                   body = ''))

@@ -36,6 +36,7 @@ BNClient <- R6Class(
     },
     getQueryUrl = function() paste0(self$uri,"/query"),
     getOperatorProperties = function(context){
+      print("getOperatorProperties")
       url = self$getQueryUrl()
       params = list(type=tson.scalar("operatorProperties"), context=context$toTson())
       
@@ -47,9 +48,10 @@ BNClient <- R6Class(
       return (fromTSON(json))
     },
     getOperatorPropertiesAsMap = function(context){
+      print("getOperatorPropertiesAsMap")
       url = self$getQueryUrl()
       params = list(type=tson.scalar("operatorPropertiesAsMap"), context=context$toTson())
-      response <- httr::POST(url, httr::add_headers('Content-Type' = 'application/octet-stream'), body=toTSON(params))
+      response <- httr::POST(url, httr::add_headers('Content-Type' = 'application/octet-stream'), body=toTSON(params), httr::verbose())
       if (response$status != 200){
         self$errorResponse("getOperatorProperties", response)
       }
@@ -57,9 +59,10 @@ BNClient <- R6Class(
       return (fromTSON(json))
     },
     getStepFolder = function(context){
+      print("getStepFolder")
       url = self$getQueryUrl()
       params = list(type=tson.scalar("stepFolder"), context=context$toTson())
-      response <- httr::POST(url, httr::add_headers('Content-Type' = 'application/octet-stream'), body=toTSON(params))
+      response <- httr::POST(url, httr::add_headers('Content-Type' = 'application/octet-stream'), body=toTSON(params), httr::verbose())
       if (response$status != 200){
         self$errorResponse("getStepFolder", response)
       }
@@ -67,9 +70,10 @@ BNClient <- R6Class(
       return (fromTSON(json))
     },
     getData = function(context){
+      print("getData")
       url = self$getQueryUrl()
       params = list(type=tson.scalar("data"), context=context$toTson())
-      response <- httr::POST(url, httr::add_headers('Content-Type' = 'application/octet-stream'), body=toTSON(params))
+      response <- httr::POST(url, httr::add_headers('Content-Type' = 'application/octet-stream'), body=toTSON(params), httr::verbose())
       if (response$status != 200){
         self$errorResponse("getData", response)
       }
@@ -77,9 +81,10 @@ BNClient <- R6Class(
       return (annotated.data.frame.fromTSON(fromTSON(json)))
     },
     getCurveFitParams= function(context){
+      print("getCurveFitParams")
       url = self$getQueryUrl()
       params = list(type=tson.scalar("curveFitParams"), context=context$toTson())
-      response <- httr::POST(url, httr::add_headers('Content-Type' = 'application/octet-stream'), body=toTSON(params))
+      response <- httr::POST(url, httr::add_headers('Content-Type' = 'application/octet-stream'), body=toTSON(params), httr::verbose())
       if (response$status != 200){
         self$errorResponse("getData", response)
       }
@@ -87,6 +92,37 @@ BNClient <- R6Class(
       params = fromTSON(json)
       params$data = data.frame.fromTSON(params$data)
       return (params)
+    },
+    sendError = function(context, error){
+      print("sendError")
+      url = self$getQueryUrl()
+      params = list(type=tson.scalar("error"), context=context$toTson(), error=error$toTson())
+      response <- httr::POST(url, httr::add_headers('Content-Type' = 'application/octet-stream'), body=toTSON(params), httr::verbose())
+      if (response$status != 200){
+        self$errorResponse("sendError", response)
+      }
+    },
+    sendOrders = function(context, bnresult){
+      print("sendOrders")
+      url = self$getQueryUrl()
+      params = list(type=tson.scalar("orders"), context=context$toTson(), orders=bnresult)
+      response <- httr::POST(url, httr::add_headers('Content-Type' = 'application/octet-stream'), body=toTSON(params), httr::verbose())
+      if (response$status != 200){
+        self$errorResponse("sendOrders", response)
+      }
+    },
+    sendResult = function(context, dataFrame){
+      print("sendResult")
+      url = self$getQueryUrl()
+      dfTson = NULL
+      if (!is.null(dataFrame)){
+        dfTson = object.asTSON(dataFrame)
+      }
+      params = list(type=tson.scalar("result"), context=context$toTson(), result=dfTson)
+      response <- httr::POST(url, httr::add_headers('Content-Type' = 'application/octet-stream'), body=toTSON(params), httr::verbose())
+      if (response$status != 200){
+        self$errorResponse("sendResult", response)
+      }
     }
   )
 )
@@ -96,13 +132,15 @@ BNContext  <- R6Class(
   public = list(
     workflowId = NULL,
     stepId = NULL,
+    contextId = NULL,
     client = NULL,
-    initialize = function(workflowId, stepId, client){
+    initialize = function(workflowId, stepId, contextId, client){
       self$workflowId = workflowId
       self$stepId = stepId
+      self$contextId = contextId
       self$client = client
     },
-    toTson = function() list(workflowId=tson.scalar(self$workflowId), stepId=tson.scalar(self$stepId)),
+    toTson = function() list(workflowId=tson.scalar(self$workflowId), stepId=tson.scalar(self$stepId), contextId=tson.scalar(self$contextId)),
     getProperties = function() self$client$getOperatorProperties(self),
     getPropertiesAsMap = function() self$client$getOperatorPropertiesAsMap(self),
     getFolder = function() self$client$getStepFolder(self),
@@ -110,6 +148,8 @@ BNContext  <- R6Class(
       return (self$getPropertiesAsMap()[["R function"]])
     },
     getCurveFitParams = function() self$client$getCurveFitParams(self),
-    getData = function() self$client$getData(self)
+    getData = function() self$client$getData(self),
+    sendError = function(error) self$client$sendError(self, error),
+    sendOrders = function(bnresult) self$client$sendOrders(self, bnresult)
   )
 )

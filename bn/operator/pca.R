@@ -110,7 +110,7 @@ internal_dataFrameOperator <- function(data,properties=properties,folder=folder)
   aRunDataList = list(aPca = aPca, sampleAnnotation=sampleAnnotation, colorAnnotation = colorAnnotation, varNames = varNames)
   #   save(file = aRunFile, aRunDataList)
   # exit
-  return(list(result=aResult, showResult=aRunDataList)) 
+  return(list(result=aResult, showResults=aRunDataList)) 
 }
 
 operatorProperties <- function() {

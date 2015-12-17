@@ -130,6 +130,19 @@ Operator <- R6Class(
       } else {
         fun(input, output, session, context)
       }
+    },
+    runApp = function(context){
+      print("runApp")
+      fun = self$env$runApp
+      if (is.null(fun)){
+        context$sendError(Error$new(500,"operator.runApp.missing","runApp function is undefined"))
+      } else {
+        tryCatch({
+          fun(context)
+        }, error = function(e) {
+          context$sendError(Error$new(500,"operator.runApp.runtime.error",toString(e)))
+        })
+      }
     }
   )
 )

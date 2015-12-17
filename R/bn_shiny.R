@@ -11,10 +11,14 @@ OperatorServerDispatcher <- R6Class(
           if (!inherits(operatorServerBuilder, "OperatorServerBuilder"))
             stop("OperatorServerDispatcher : 'operatorServerBuilder' is not a OperatorServerBuilder object.")
           self$operatorServerBuilder <- operatorServerBuilder
-          shinyNSEnv = asNamespace( "shiny" ) 
-          shinyHandlerManager = get( "handlerManager" , envir = shinyNSEnv ) 
-          routeHandler = get( "routeHandler" , envir = shinyNSEnv ) 
+#           shinyNSEnv = asNamespace( "shiny" ) 
+#           shinyHandlerManager = get( "handlerManager" , envir = shinyNSEnv ) 
+#           routeHandler = get( "routeHandler" , envir = shinyNSEnv ) 
           
+          shinyHandlerManager = shiny:::handlerManager
+          routeHandler = shiny:::routeHandler
+          
+          shinyHandlerManager$addHandler(routeHandler("/operator/runApp",self$runAppHttpHandler) , "operator_runuApp")
           shinyHandlerManager$addHandler(routeHandler("/operator/query",self$queryHttpHandler) , "operator_query")
           
           shinyHandlerManager$addHandler(routeHandler("/operator/properties",self$operatorPropertiesHttpHandler) , "operator_properties")
@@ -169,6 +173,18 @@ OperatorServerDispatcher <- R6Class(
                       body = ''))
         } else {
           return (server$showResultsHttpHandler(request))
+        }
+      },
+      runAppHttpHandler = function(req) {
+        request = HttpRequest$new(req)
+        queryParameters = request$queryParameters()
+        server = self$operatorServerBuilder$getOperatorServer(queryParameters)
+        if (is.null(server)){
+          return(list(status = 404L,
+                      headers = list('Content-Type' = 'application/json'),
+                      body = ''))
+        } else {
+          return (server$runAppHttpHandler(request))
         }
       }
     )
