@@ -17,13 +17,14 @@ OperatorServer<- R6Class(
     
     shinyServer = function(input, output, session){
       query <- isolate(parseQueryString(session$clientData$url_search))
-      context = BNContext$new(query$workflowId, as.integer(query$stepId), self$client)
+      context = BNContext$new(query$workflowId, as.integer(query$stepId), query$contextId, self$client)
       sessionType = query[["sessionType"]]
       if (identical(sessionType,"run")){
         self$runShinyServer(input, output, session, context)
       } else if (identical(sessionType,"show")){
         self$showShinyServer(input, output, session, context)
       } else {
+        context$error(Error$new(500,"shiny.server.session.type.wrong.value","sessionType must be run or show"))
         stop("sessionType must be run or show")
       }
     },
@@ -34,38 +35,16 @@ OperatorServer<- R6Class(
       self$operator$shinyServerShowResults(input, output, session, context)
     },
     operatorPropertiesHttpHandler = function(request){
-      if (!inherits(request, "HttpRequest"))
-        stop("'request' is not a HttpRequest object.")
       body = jsonlite::toJSON(self$operator$operatorProperties())
       return(list(status = 200L,
                   headers = list('Content-Type' = 'application/json'),
                   body = body))
       
     },
-    hasShinyShowResultsHttpHandler= function(request){
-      if (!inherits(request, "HttpRequest"))
-        stop("'request' is not a HttpRequest object.")
-      body = ''
-      status = 404L
-      if (self$operator$hasShinyShowResults()){
-        status = 200L
-      } 
-      return(list(status = status,
-                  headers = list('Content-Type' = 'application/json'),
-                  body = body))
-      
-    },
-    hasCurveFittingHttpHandler = function(request){
-      if (!inherits(request, "HttpRequest"))
-        stop("'request' is not a HttpRequest object.")
-      body = ''
-      status = 404L
-      if (self$operator$hasCurveFitting()){
-        status = 200L
-      } 
-      return(list(status = status,
-                  headers = list('Content-Type' = 'application/json'),
-                  body = body))
+    operatorCapabilityHttpHandler= function(request){
+      return(list(status = 200L,
+                  headers = list('Content-Type' = 'application/octet-stream'),
+                  body = toTSON(self$operator$capability())))
       
     },
     dataFrameOperatorHttpHandler = function(request){

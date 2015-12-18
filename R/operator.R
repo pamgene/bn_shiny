@@ -58,11 +58,25 @@ Operator <- R6Class(
 #         return (list)
 #       }
     },
-    hasShinyShowResults = function(){
-      return (!is.null(self$env$shinyServerShowResults))
-    },
-    hasCurveFitting = function(){
-      return (!is.null(self$env$curveFitOperatorFunction))
+     capability = function(){
+      answer = list()
+       
+      
+      if (!is.null(self$env$shinyServerRun)){
+        answer[["run"]] = tson.scalar("shiny")
+      } else if (!is.null(self$env$dataFrameOperator)){
+        answer[["run"]] = tson.scalar("default")
+      }
+       
+      if (!is.null(self$env$shinyServerShowResults)){
+        answer[["showResults"]] = tson.scalar("shiny")
+      } else if (!is.null(self$env$showResults)){
+        answer[["showResults"]] = tson.scalar("default")
+      }
+      if (!is.null(self$env$curveFitOperatorFunction)){
+        answer[["hasCurveFitting"]] = tson.scalar(TRUE)
+      }
+      return(answer)
     },
     curveFittingTable = function(param){
       if (!inherits(param, "CurveFittingTableParam"))
@@ -118,7 +132,7 @@ Operator <- R6Class(
     shinyServerRun = function(input, output, session, context){
       fun = self$env$shinyServerRun
       if (is.null(fun)){
-        return (NULL)
+        context$error(Error$new(500,"operator.shinyServerRun.missing","shinyServerRun function is undefined"))
       } else {
         fun(input, output, session, context)
       }
@@ -126,7 +140,7 @@ Operator <- R6Class(
     shinyServerShowResults = function(input, output, session, context){
       fun = self$env$shinyServerShowResults
       if (is.null(fun)){
-        return (NULL)
+        context$error(Error$new(500,"operator.shinyServerShowResults.missing","shinyServerShowResults function is undefined"))
       } else {
         fun(input, output, session, context)
       }
@@ -135,12 +149,12 @@ Operator <- R6Class(
       print("runApp")
       fun = self$env$runApp
       if (is.null(fun)){
-        context$sendError(Error$new(500,"operator.runApp.missing","runApp function is undefined"))
+        context$error(Error$new(500,"operator.runApp.missing","runApp function is undefined"))
       } else {
         tryCatch({
           fun(context)
         }, error = function(e) {
-          context$sendError(Error$new(500,"operator.runApp.runtime.error",toString(e)))
+          context$error(Error$new(500,"operator.runApp.runtime.error",toString(e)))
         })
       }
     }

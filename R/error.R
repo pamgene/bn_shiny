@@ -4,7 +4,7 @@ Error <- R6Class(
     statusCode = NA,
     error = NA,
     reason = NA,
-    initialize = function(statusCode,error,reason) {
+    initialize = function(statusCode=500,error="unknown",reason="unknow error") {
       self$statusCode <- statusCode
       self$error <- error
       self$reason <- reason

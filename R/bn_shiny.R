@@ -23,14 +23,13 @@ OperatorServerDispatcher <- R6Class(
           
           shinyHandlerManager$addHandler(routeHandler("/operator/properties",self$operatorPropertiesHttpHandler) , "operator_properties")
           shinyHandlerManager$addHandler(routeHandler("/operator/hasOperator",self$hasOperatorHttpHandler) , "operator_hasOperator")
+          shinyHandlerManager$addHandler(routeHandler("/operator/capability",self$operatorCapabilityHttpHandler) , "operator_capability")
           
           shinyHandlerManager$addHandler(routeHandler("/operator/addOperator",self$addOperatorHttpHandler) , "addOperator")
           shinyHandlerManager$addHandler(routeHandler("/operator/dataFrameOperator",self$dataFrameOperatorHttpHandler) , "operator_dataFrameOperator")
-          shinyHandlerManager$addHandler(routeHandler("/operator/hasCurveFitting",self$hasCurveFittingHttpHandler) , "operator_hasCurveFitting")
-          shinyHandlerManager$addHandler(routeHandler("/operator/curveFitOperator",self$curveFitOperatorHttpHandler) , "operator_curveFitOperator")
+           shinyHandlerManager$addHandler(routeHandler("/operator/curveFitOperator",self$curveFitOperatorHttpHandler) , "operator_curveFitOperator")
           shinyHandlerManager$addHandler(routeHandler("/operator/showResults",self$showResultsHttpHandler) , "operator_showResults")
-          shinyHandlerManager$addHandler(routeHandler("/operator/hasShinyShowResults",self$hasShinyShowResultsHttpHandler) , "operator_hasShinyShowResults")
-        }
+         }
       },
       getSessionShinyServer = function(session){
         query <- isolate(parseQueryString(session$clientData$url_search))
@@ -111,7 +110,7 @@ OperatorServerDispatcher <- R6Class(
                       body = ''))
         }
       },
-      hasShinyShowResultsHttpHandler = function(req){
+      operatorCapabilityHttpHandler = function(req){
         
         request = HttpRequest$new(req)
         queryParameters = request$queryParameters()
@@ -121,22 +120,9 @@ OperatorServerDispatcher <- R6Class(
                       headers = list('Content-Type' = 'application/json'),
                       body = ''))
         } else {
-          return (server$hasShinyShowResultsHttpHandler(request))
+          return (server$operatorCapabilityHttpHandler(request))
         }
-      },
-      hasCurveFittingHttpHandler = function(req){
-         
-        request = HttpRequest$new(req)
-        queryParameters = request$queryParameters()
-        server = self$operatorServerBuilder$getOperatorServer(queryParameters)
-        if (is.null(server)){
-          return(list(status = 404L,
-                      headers = list('Content-Type' = 'application/json'),
-                      body = ''))
-        } else {
-          return (server$hasCurveFittingHttpHandler(request))
-        }
-      },
+      } ,
        
       dataFrameOperatorHttpHandler = function(req){
         
