@@ -6,6 +6,8 @@ shinyServerShowResults <- function(input, output, session, client) {
   ggplotObject = reactive({buidPlot(data())})
   dataSummary = reactive({buildSummary(data())})
   
+  isolate(base::print(ggplotObject()))
+  
   output$body = renderUI({
     
     mainPanel(
@@ -47,8 +49,7 @@ buildSummaryFor = function(data, groupingType, rowOrColSeq){
 buildSummary = function(data){
   pDataFrame = Biobase::pData(data)
   rcFrame = data.frame(Rows = as.factor(max(pDataFrame$rowSeq)),
-                       Columns = as.factor(max(pDataFrame$colSeq)),
-                       N=as.factor(nrow(pDataFrame)) )
+                       Columns = as.factor(max(pDataFrame$colSeq)), N=as.factor(nrow(pDataFrame)))
   rownames(rcFrame) = '#'
   return (list( array= buildSummaryFor(data, 'Array', 'rowSeq'),
                 spot=buildSummaryFor(data, 'Spot', 'colSeq'),
