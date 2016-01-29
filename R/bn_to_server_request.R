@@ -1,0 +1,209 @@
+requestFromJson = function(json){
+  print("requestFromJson")
+  type = json[["type"]]
+  print(type)
+  if (identical(type, "BNSessionIdRequest")){
+    return(BNSessionIdRequest$new(json=json))
+  } else if (identical(type, "BNAddOperatorRequest")){
+    return(BNAddOperatorRequest$new(json=json))
+  } else if (identical(type, "BNOperatorPropertiesRequest")){
+    return(BNOperatorPropertiesRequest$new(json=json))
+  } else if (identical(type, "BNHasOperatorRequest")){
+    return(BNHasOperatorRequest$new(json=json))
+  } else if (identical(type, "BNOperatorCapabilityRequest")){
+    return(BNOperatorCapabilityRequest$new(json=json))
+  } else if (identical(type, "BNDataFrameOperatorRequest")){
+    return(BNDataFrameOperatorRequest$new(json=json))
+  } else if (identical(type, "BNShowResultRequest")){
+    return(BNShowResultRequest$new(json=json))
+  }else if (identical(type, "BNFittingTableRequest")){
+    return(BNFittingTableRequest$new(json=json))
+  }  else {
+    stop(paste0("unknown request type : ", type))  
+  }
+}
+
+BNSessionIdRequest = R6Class(
+  "BNSessionIdRequest",
+  inherit = BNRequest,
+  public =list(
+    processOn = function(bnSession){
+      response = list(id=tson.scalar(self$id),
+                      type=tson.scalar(self$type),
+                      sessionId=tson.scalar(bnSession$sessionId))
+      bnSession$sendResponse(response)
+    }
+  )
+)
+
+# abstract
+BNOperatorRequest = R6Class(
+  "BNOperatorRequest",
+  inherit = BNRequest,
+  active = list(
+    operatorId = function(value){
+      if (missing(value)) return(self$json$operatorId)
+      else self$json$operatorId <- value
+    }
+  )
+)
+
+BNAddOperatorRequest = R6Class(
+  "BNAddOperatorRequest",
+  inherit = BNOperatorRequest,
+  public =list(
+    processOn = function(bnSession){
+      print(self$operatorId)
+      operator <- Operator$new()
+      operator$sourceCode(self$code)
+      bnSession$addOperator(self$operatorId, operator)
+      bnSession$sendVoid(self$id)
+    }
+  ),
+  active = list(
+    code = function(value){
+      if (missing(value)) return(self$json$code)
+      else self$json$code <- value
+    }
+  )
+)
+
+BNOperatorPropertiesRequest = R6Class(
+  "BNOperatorPropertiesRequest",
+  inherit = BNOperatorRequest,
+  public =list(
+    processOn = function(bnSession){
+      operator = bnSession$getOperator(self$operatorId)
+      response = list(id=tson.scalar(self$id),
+                      type=tson.scalar(self$type),
+                      properties=operator$operatorProperties())
+      bnSession$sendResponse(response)
+    }
+  )
+)
+
+BNHasOperatorRequest = R6Class(
+  "BNHasOperatorRequest",
+  inherit = BNOperatorRequest,
+  public =list(
+    processOn = function(bnSession){
+      operator = bnSession$getOperator(self$operatorId)
+      response = list(id=tson.scalar(self$id),
+                      type=tson.scalar(self$type),
+                      hasOperator=tson.scalar(!is.null(operator)))
+      bnSession$sendResponse(response)
+    }
+  )
+)
+
+BNOperatorCapabilityRequest = R6Class(
+  "BNOperatorCapabilityRequest",
+  inherit = BNOperatorRequest,
+  public =list(
+    processOn = function(bnSession){
+      operator = bnSession$getOperator(self$operatorId)
+      response = list(id=tson.scalar(self$id),
+                      type=tson.scalar(self$type),
+                      capability=operator$capability())
+      bnSession$sendResponse(response)
+    }
+  )
+)
+
+BNDataFrameOperatorRequest = R6Class(
+  "BNDataFrameOperatorRequest",
+  inherit = BNOperatorRequest,
+  public =list(
+    processOn = function(bnSession){
+      operator = bnSession$getOperator(self$operatorId)
+      data = annotated.data.frame.fromTSON(self$data)
+      result = operator$dataFrameOperator(DataFrameOperatorParam$new(data,self$properties,self$folder))
+      if (!is.null(result)){
+        if (class(result) == "data.frame"){
+          result <- data.frame.asTSON(result)
+        } else if (class(result) == "AnnotatedDataFrame"){
+          result <- annotated.data.frame.asTSON(result)
+        } else {
+          stop("result : unknown class ")
+        }
+      } else {
+        stop("result : null ")
+      }
+      
+      response = list(id=tson.scalar(self$id),
+                      type=tson.scalar(self$type),
+                      data=result)
+      bnSession$sendResponse(response)
+    }
+  ),
+  active = list(
+    properties = function(value){
+      if (missing(value)) return(self$json$properties)
+      else self$json$properties <- value
+    },
+    folder = function(value){
+      if (missing(value)) return(self$json$folder)
+      else self$json$folder <- value
+    },
+    data = function(value){
+      if (missing(value)) return(self$json$data)
+      else self$json$data <- value
+    }
+  ) 
+)
+
+BNShowResultRequest = R6Class(
+  "BNShowResultRequest",
+  inherit = BNOperatorRequest,
+  public =list(
+    processOn = function(bnSession){
+      operator = bnSession$getOperator(self$operatorId)
+      operator$showResults(ShowResultParam$new(self$properties,self$folder))
+      bnSession$sendVoid(self$id)
+    }
+  ),
+  active = list(
+    properties = function(value){
+      if (missing(value)) return(self$json$properties)
+      else self$json$properties <- value
+    },
+    folder = function(value){
+      if (missing(value)) return(self$json$folder)
+      else self$json$folder <- value
+    }
+  ) 
+)
+
+BNFittingTableRequest = R6Class(
+  "BNFittingTableRequest",
+  inherit = BNOperatorRequest,
+  public =list(
+    processOn = function(bnSession){
+      operator = bnSession$getOperator(self$operatorId)
+      result = operator$curveFittingTable(CurveFittingTableParam$new(data.frame.fromTSON(self$data),self$xValues, self$properties))
+      
+      response = list(id=tson.scalar(self$id),
+                      type=tson.scalar(self$type),
+                      data=result)
+      
+      bnSession$sendResponse(response)
+    }
+  ),
+  active = list(
+    properties = function(value){
+      if (missing(value)) return(self$json$properties)
+      else self$json$properties <- value
+    },
+    xValues = function(value){
+      if (missing(value)) return(self$json$xValues)
+      else self$json$xValues <- value
+    },
+    data = function(value){
+      if (missing(value)) return(self$json$data)
+      else self$json$data <- value
+    }
+  ) 
+)
+
+
+

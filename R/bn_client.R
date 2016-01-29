@@ -137,7 +137,7 @@ BNContext  <- R6Class(
     workflowId = NULL,
     stepId = NULL,
     contextId = NULL,
-    client = NULL,
+    x = NULL,
     initialize = function(workflowId, stepId, contextId, client){
       self$workflowId = workflowId
       self$stepId = stepId
