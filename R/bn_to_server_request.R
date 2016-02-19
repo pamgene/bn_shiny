@@ -1,7 +1,5 @@
 requestFromJson = function(json){
-  print("requestFromJson")
   type = json[["type"]]
-  print(type)
   if (identical(type, "BNSessionIdRequest")){
     return(BNSessionIdRequest$new(json=json))
   } else if (identical(type, "BNAddOperatorRequest")){
@@ -18,6 +16,8 @@ requestFromJson = function(json){
     return(BNShowResultRequest$new(json=json))
   }else if (identical(type, "BNFittingTableRequest")){
     return(BNFittingTableRequest$new(json=json))
+  } else if (identical(type, "BNRunAppRequest")){
+    return(BNRunAppRequest$new(json=json))
   }  else {
     stop(paste0("unknown request type : ", type))  
   }
@@ -53,7 +53,6 @@ BNAddOperatorRequest = R6Class(
   inherit = BNOperatorRequest,
   public =list(
     processOn = function(bnSession){
-      print(self$operatorId)
       operator <- Operator$new()
       operator$sourceCode(self$code)
       bnSession$addOperator(self$operatorId, operator)
@@ -205,5 +204,33 @@ BNFittingTableRequest = R6Class(
   ) 
 )
 
+
+BNRunAppRequest = R6Class(
+  "BNRunAppRequest",
+  inherit = BNOperatorRequest,
+  public =list(
+    processOn = function(bnSession){
+      operator = bnSession$getOperator(self$operatorId)
+      context = BNSessionContext$new(self$workflowId, self$stepId, self$contextId, bnSession)
+      bnSession$sendVoid(self$id)
+      operator$runApp(context)
+      shiny:::flushReact()
+    }
+  ),
+  active = list(
+    workflowId = function(value){
+      if (missing(value)) return(self$json$workflowId)
+      else self$json$workflowId <- value
+    },
+    stepId = function(value){
+      if (missing(value)) return(self$json$stepId)
+      else self$json$stepId <- value
+    },
+    contextId = function(value){
+      if (missing(value)) return(self$json$contextId)
+      else self$json$contextId <- value
+    }
+  ) 
+)
 
 

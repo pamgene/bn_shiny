@@ -1,4 +1,5 @@
    library(devtools)
+   library(shiny)
 
 bnshiny::startBNShiny()
 
@@ -33,3 +34,12 @@ testClient = TestClient$new("http://127.0.0.1:6042")
 testClient$getProperties("./bn/operator/demo_operator.R")
  
  
+reactValues = reactiveValues(myProp="hey")
+o1 = observe({
+  print('observe call')
+  print(reactValues$myProp)
+})
+
+shiny:::flushReact()
+
+reactValues$myProp = 'hey2'

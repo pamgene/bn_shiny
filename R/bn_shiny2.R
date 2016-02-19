@@ -53,7 +53,7 @@ BNSession = R6Class(
           response = responseFromJson(messageEnvelope[["message"]])
           response$processOn(self)
         } else {
-          print(paste0("unknown message kind : "), kind)
+          stop(paste0("unknown message kind : "), kind)
         }
       }, error = function(e) {
         self$sendError(request$id, e)
@@ -66,6 +66,17 @@ BNSession = R6Class(
     
     sendResponse = function(msg){
       self$send(list(kind=tson.scalar("response"), message=msg))
+    },
+    
+    sendRequest = function(msg){
+      self$send(list(kind=tson.scalar("request"), message=msg))
+    },
+    
+    sendContextError = function(contextId, error){
+      print(error)
+      self$sendResponse(list(contextId=tson.scalar(contextId),
+                             type=tson.scalar("contextError"),
+                             error= tson.scalar(toString(error)) ))
     },
     
     sendError = function(id, error){
@@ -88,6 +99,64 @@ BNSession = R6Class(
   )
 )
 
+BNSessionContext  <- R6Class(
+  'BNSessionContext',
+  public = list(
+    workflowId = NULL,
+    stepId = NULL,
+    contextId = NULL,
+    session = NULL,
+    initialize = function(workflowId, stepId, contextId, session){
+      self$workflowId = workflowId
+      self$stepId = stepId
+      self$contextId = contextId
+      self$session = session
+      if (is.null(self$workflowId)) stop("BNContext : workflowId is null")
+      if (is.null(self$stepId)) stop("BNContext : stepId is null")
+      if (is.null(self$contextId)) stop("BNContext : contextId is null")
+      if (is.null(self$session)) stop("BNContext : session is null")
+      if (!inherits(session, "BNSession"))
+        stop("BNContext : 'session' is not a BNSession object.")
+      
+    },
+    processRequest = function(reactiveRequest){
+      if (!inherits(reactiveRequest, "BNReactiveRequest"))
+        stop("BNSessionContext processRequest : 'reactiveRequest' is not a BNReactiveRequest object.")
+      reactiveRequest$processContext(self)
+      return(reactiveRequest$reactiveValues)
+    },
+    toTson = function() list(workflowId=tson.scalar(self$workflowId), stepId=tson.scalar(self$stepId), contextId=tson.scalar(self$contextId)),
+    getProperties = function() {
+      stop('BNSessionContext getProperties not yet implemented')
+    },
+    getPropertiesAsMap = function() {
+      stop('BNSessionContext getPropertiesAsMap not yet implemented')
+    },
+    
+    getFolder = function() self$processRequest(BNGetFolderRequest$new()),
+    
+    getCurveFitParams = function(){
+      stop('BNSessionContext getCurveFitParams not yet implemented')
+    },
+    getData = function() self$processRequest(BNGetDataRequest$new()),
+    error = function(error){
+      self$session$sendContextError(self$contextId, error)
+    },
+    setOrders = function(rowOrder,colOrder){
+      request = BNSetOrderRequest$new()
+      orders = list()
+      if (!is.null(rowOrder)) orders[['rowOrder']] = as.integer(rowOrder)
+      if (!is.null(colOrder)) orders[['colOrder']] = as.integer(colOrder)
+      
+      request$value = orders
+      self$processRequest(request)
+    },
+    setResult = function(data){
+      stop('BNSessionContext setResult not yet implemented')
+    }
+  )
+)
+
 BNMessage = R6Class(
   "BNMessage",
   public = list(
@@ -100,11 +169,11 @@ BNMessage = R6Class(
   active = list(
     id = function(value){
       if (missing(value)) return(self$json$id)
-      else self$json$id <- value
+      else self$json$id <- tson.scalar(value)
     },
     type = function(value){
       if (missing(value)) return(self$json$type)
-      else self$json$type <- value
+      else self$json$type <- tson.scalar(value)
     }
   )
 )

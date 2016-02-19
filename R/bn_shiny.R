@@ -227,7 +227,6 @@ OperatorServerBuilderImpl<- R6Class(
       operatorServer = NULL;
       operatorServer = private$operatorByIds$get(operatorId)
       if (!is.null(operatorServer)){
-        print("Found operator from cache")
         return (operatorServer)
       } 
       

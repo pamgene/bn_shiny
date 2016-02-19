@@ -106,7 +106,6 @@ Operator <- R6Class(
         return (NULL)
       } else {
         dataFrame <- fun(operatorParam$data, properties=operatorParam$properties,folder=operatorParam$folder)
-        print("dataFrameOperator done")
         return (dataFrame)
       }
     },
@@ -146,7 +145,6 @@ Operator <- R6Class(
       }
     },
     runApp = function(context){
-      print("runApp")
       fun = self$env$runApp
       if (is.null(fun)){
         context$error(Error$new(500,"operator.runApp.missing","runApp function is undefined"))
