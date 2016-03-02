@@ -56,6 +56,7 @@ BNSession = R6Class(
           stop(paste0("unknown message kind : "), kind)
         }
       }, error = function(e) {
+        # traceback()
         self$sendError(request$id, e)
       })
     },

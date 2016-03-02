@@ -53,9 +53,9 @@ sourceUTF8 <- function(file, envir = globalenv()) {
   # **can** be encoded natively on Windows (might be a bug in base R); we fall
   # back to parse(text) in this case
   exprs <- tryCatch(
-    parse(file, keep.source = FALSE, srcfile = src, encoding = enc),
+    parse(file, keep.source = TRUE, srcfile = src, encoding = enc),
     error = function(e) {
-      parse(text = lines, keep.source = FALSE, srcfile = src, encoding = enc)
+      parse(text = lines, keep.source = TRUE, srcfile = src, encoding = enc)
     }
   )
   eval(exprs, envir)
@@ -63,7 +63,7 @@ sourceUTF8 <- function(file, envir = globalenv()) {
 
 sourceUTF8FromCode <- function(lines, envir = globalenv()) {
   enc <- if (any(Encoding(lines) == 'UTF-8')) 'UTF-8' else 'unknown'
-  exprs <- parse(text = lines, keep.source = FALSE, encoding = enc)
+  exprs <- parse(text = lines, keep.source = TRUE, encoding = enc)
   eval(exprs, envir)
 }
 

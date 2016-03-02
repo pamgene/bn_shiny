@@ -39,7 +39,11 @@ data.frame.fromTSON <- function(tson){
   }
   d <- data.frame(dfc)
   
-  colnames(d) <- names(list)
+  colnames(d) <- make.names(names(list))
+   
+  if (!is.null(tson$attr)){
+    attributes(d) <- c(attributes(d), tson$attr)
+  }
  
   return (d)
 }

@@ -21,6 +21,7 @@ startBNShiny = function() {
 #' Use websocket for transport channel
 #' @export
 startBNWsShiny = function() {
+
   options(shiny.launch.browser = FALSE)
   options(shiny.maxRequestSize = 1024 ^ 3)
     
