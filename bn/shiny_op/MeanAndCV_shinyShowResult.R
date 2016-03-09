@@ -1,8 +1,6 @@
 # MeanAndCv
 # source("C:\\Users\\rdwijn.PAMGENE\\Documents\\140-700 Bioinformatics\\pamapps\\components\\MeanAndCv\\impl\\MeanAndCv.r")
 library(Biobase)
-library(shiny)
-
 checkpack <- function(packagename){
   if (! (packagename %in% installed.packages() ) ){
     install.packages(packagename, repos = "http://cran.rstudio.com/", dependencies = TRUE)
@@ -27,30 +25,7 @@ getPropertyValue <- function(properties=properties, name=name, prop.is.numeric =
   return (NULL)
 }
 #
-
-shinyServerRun <- function(input, output, session, context){
-  data = reactive({context$getData()})
-  properties = reactive({context$getProperties()})
-  folder = reactive({context$getFolder()})
-  
-  
-  output$body = renderUI({
-    mainPanel(
-      h3("Operator Mean & CV"),
-      withProgress(message = 'Computing Mean & CV', value = 0, {
-        tryCatch({
-          result = dataFrameOperator(data(), properties=properties(), folder=folder())
-          context$setResult(result)
-        }, error=context$error)
-      })
-    )
-  }) 
-}
-
-
 dataFrameOperator <- function(data,properties=properties,folder=folder) {
-  print("dataFrameOperator")
-  print(data)
   metaData <- varMetadata(data)
   dataColor =  colnames(pData(data))[metaData$groupingType=="Color"]
   aD <- data.frame(rowSeq=pData(data)$rowSeq,colSeq=pData(data)$colSeq, y=data[["value"]])
@@ -62,17 +37,12 @@ dataFrameOperator <- function(data,properties=properties,folder=folder) {
   }
   aD = data.frame(aD, c = aColorFactor)
   
-  n <- length(unique(aD$c))
-  progressStep <<- 1/n
-  progress <<- 1
-  
   aD = aD[!data[['IsOutlier']],] # remove filtered
   
   pHigh = getPropertyValue(properties,"EM fit, high signal presence", TRUE )
   pLow = getPropertyValue(properties, "EM fit, low signal presence", TRUE)
   maxIter = getPropertyValue(properties, "EM fit, maxIterations", TRUE)
   bFit = getPropertyValue(properties, "Fit Error Model") == "Yes"
-  
   aResult = ddply(aD, ~c, .fun = operatorFunction, pLow, pHigh, maxIter, bFit)
   
   aRunDataFile <- paste(folder, "\\runData.rda", sep = "")
@@ -91,11 +61,6 @@ dataFrameOperator <- function(data,properties=properties,folder=folder) {
 }#
 
 operatorFunction<-function(aFrame, pLow = 0.05, pHigh = 0.98, maxIter = 25, do.fit = TRUE){
-  
-  incProgress(progressStep, detail = paste("Doing part", progress))
-  
-  progress <<- 1 + progress
-  
   # calculate per cell stats
   aResult = ddply(aFrame,  ~ rowSeq + colSeq, .fun = meanAndCvFun)
   # model parameters
@@ -214,6 +179,64 @@ operatorProperties <- function() {
   return (propList)
 }
 #
+showResults <- function(properties=properties, folder=folder) {
+  aRunDataFile = paste(folder, "\\runData.rda", sep = "");
+  load(aRunDataFile);
+  aResult = aRunDataList$result
+  xAxisMode = getPropertyValue(properties, "X-Axis Mode")
+  
+  if (xAxisMode == "Auto"){
+    xmin = 0
+    xmax =  max(as.numeric(aResult$m), na.rm = TRUE)
+  } 
+  else {
+    xmin = getPropertyValue(properties, "Xmin", TRUE)
+    xmax = getPropertyValue(properties, "Xmax", TRUE)
+  }
+  yAxisMode = getPropertyValue(properties, "Y-Axis Mode")
+  if (yAxisMode == "Auto"){
+    ymin = 0
+    ymax = 1
+  } 
+  else {
+    ymin = getPropertyValue(properties, "Ymin", TRUE)
+    ymax = getPropertyValue(properties, "Ymax", TRUE)
+  }  
+  
+  aResult = subset(aResult, m > 0)
+  pHigh = getPropertyValue(properties,"EM fit, high signal presence", TRUE )
+  aResult = data.frame(aResult, bHigh = aResult$presence > pHigh)
+  showFit = getPropertyValue(properties, "Fit Error Model") == "Yes"
+  
+  
+  if (showFit){
+    aResult = ddply(aResult, ~color, .fun = cvFit)
+  }
+  
+  logx = getPropertyValue(properties, "X axis scaling") == "Log"
+  if (logx) {
+    aResult$m = log2(aResult$m)
+  }
+  
+  
+  if (showFit & any(!is.nan(aResult$yFit))){
+    prt = ggplot(aResult, aes(x = m, y = cv, colour = presence, shape = bHigh)) + geom_point()
+    prt = prt + ylim(c(ymin, ymax))
+    prt = prt + geom_line(aes(x = m, y = yFit), colour = "red")
+    prt = prt + facet_wrap(~label)
+  } else {
+    prt = ggplot(aResult, aes(x = m, y = cv) ) + geom_point(colour = "blue")
+    prt = prt + ylim(c(ymin, ymax))
+    prt = prt + facet_wrap(~c)
+  }
+  
+  print(prt)	
+}
+#
+
+
+
+
 shinyServerShowResults <- function(input, output, session, context) {
   
   getFolderReactive = context$getFolder()
@@ -224,7 +247,7 @@ shinyServerShowResults <- function(input, output, session, context) {
     getFolder = getFolderReactive$value
     if (is.null(getFolder)) return(NULL)
     folder = getFolder()
-     
+    
     getData=getDataReactive$value
     if (is.null(getData)) return(NULL)
     data = getData()
@@ -232,7 +255,7 @@ shinyServerShowResults <- function(input, output, session, context) {
     getProperties=getPropertiesReactive$value
     if (is.null(getProperties)) return(NULL)
     properties = getProperties()
-     
+    
     aRunDataFile = paste(folder, "\\runData.rda", sep = "");
     load(aRunDataFile);
     aResult = aRunDataList$result
@@ -282,7 +305,7 @@ shinyServerShowResults <- function(input, output, session, context) {
       prt = prt + ylim(c(ymin, ymax))
       prt = prt + facet_wrap(~c)
     }
-     
+    
     output$plot = renderPlot({print(prt)})
     
   })

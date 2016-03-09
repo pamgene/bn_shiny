@@ -68,6 +68,22 @@ BNGetFolderRequest = R6Class(
   )
 )
 
+BNGetPropertiesRequest = R6Class(
+  'BNGetPropertiesRequest',
+  inherit = BNContextRequest,
+  public = list(
+    getType = function() 'BNGetPropertiesRequest'
+  )
+)
+
+BNGetPropertiesAsMapRequest = R6Class(
+  'BNGetPropertiesAsMapRequest',
+  inherit = BNContextRequest,
+  public = list(
+    getType = function() 'BNGetPropertiesAsMapRequest'
+  )
+)
+
 BNGetDataRequest = R6Class(
   'BNGetDataRequest',
   inherit = BNContextRequest,

@@ -20,6 +20,17 @@ BNShinySessionDispatcher <- R6Class(
       return(list(status = 200L,
                   headers = list('Content-Type' = 'application/json'),
                   body = '[]'))  
+    },
+    dispatch = function(input, output, session) {
+      print("dispatch shiny session")
+      
+      query <- isolate(parseQueryString(session$clientData$url_search))
+      sessionId = query$sessionId
+      if (is.null(sessionId)) stop("sessionId is required")
+      bnSession = self$bnSessionByIds$get(sessionId)
+      if (is.null(bnSession)) stop("unknown sessionId")
+      bnSession$dispatchSiny(input, output, session)
+      
     }
   )
 )
@@ -39,6 +50,44 @@ BNSession = R6Class(
       self$sessionId = sessionId
       self$ws = ws
       self$ws$onMessage(self$onMessage)
+    },
+    
+    dispatchSiny = function(input, output, session) {
+      
+      print("BNSession : dispatchSiny")
+      
+      contextId = NULL
+      query = NULL
+      
+      tryCatch({
+        query <- isolate(parseQueryString(session$clientData$url_search))
+        contextId = query$contextId
+        if (is.null(contextId)) stop("BNSession : contextId is required")
+      }, error = function(e) {
+        self$sendNoContextError(e)
+        stop(e)
+      })
+      
+      tryCatch({
+        operatorId = query[["operatorId"]]
+        if (is.null(operatorId)) stop("BNSession : operatorId is required")
+        operator = self$operatorByIds$get(operatorId)
+        if (is.null(operator)) stop("BNSession : operator is unknown")
+         
+        context = BNSessionContext$new(query$workflowId, as.integer(query$stepId), contextId, self)
+        sessionType = query[["sessionType"]]
+        
+        if (identical(sessionType,"run")){
+          operator$shinyServerRun(input, output, session, context)
+        } else if (identical(sessionType,"show")){
+          operator$shinyServerShowResults(input, output, session, context)
+        } else {
+          stop("sessionType must be run or show")
+        }
+      }, error = function(e) {
+        self$sendContextError(contextId, e)
+        stop(e)
+      })
     },
     
     onMessage = function(binary, message) {
@@ -74,15 +123,20 @@ BNSession = R6Class(
     },
     
     sendContextError = function(contextId, error){
-      print(error)
-      self$sendResponse(list(contextId=tson.scalar(contextId),
-                             type=tson.scalar("contextError"),
+      self$send(list(
+                             kind=tson.scalar("contextError"),
+                             contextId=tson.scalar(contextId),
+                             error= tson.scalar(toString(error)) ))
+    },
+    sendNoContextError = function(error){
+      self$send(list(kind=tson.scalar("noContextError"),
                              error= tson.scalar(toString(error)) ))
     },
     
     sendError = function(id, error){
-      print(error)
-      self$sendResponse(list(id=tson.scalar(id), type=tson.scalar("error"), error= tson.scalar(toString(error)) ))
+      self$sendResponse(list(id=tson.scalar(id),
+                             type=tson.scalar("error"),
+                             error= tson.scalar(toString(error)) ))
     },
     
     sendVoid = function(id){
@@ -127,12 +181,8 @@ BNSessionContext  <- R6Class(
       return(reactiveRequest$reactiveValues)
     },
     toTson = function() list(workflowId=tson.scalar(self$workflowId), stepId=tson.scalar(self$stepId), contextId=tson.scalar(self$contextId)),
-    getProperties = function() {
-      stop('BNSessionContext getProperties not yet implemented')
-    },
-    getPropertiesAsMap = function() {
-      stop('BNSessionContext getPropertiesAsMap not yet implemented')
-    },
+    getProperties = function() self$processRequest(BNGetPropertiesRequest$new()), 
+    getPropertiesAsMap = function() self$processRequest(BNGetPropertiesAsMapRequest$new()), 
     
     getFolder = function() self$processRequest(BNGetFolderRequest$new()),
     
