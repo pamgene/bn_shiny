@@ -106,7 +106,12 @@ BNSession = R6Class(
         }
       }, error = function(e) {
         # traceback()
-        self$sendError(request$id, e)
+        if (is.null(request)){
+          self$sendNoContextError(e)
+        } else {
+          self$sendError(request$id, e)
+        }
+        
       })
     },
     

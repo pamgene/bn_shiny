@@ -230,35 +230,117 @@ showResults <- function(properties=properties, folder=folder) {
     prt = prt + facet_wrap(~c)
   }
   
-  # print(prt)	
-  return(prt)
-} 
+  print(prt)	
+}
+#
+
+
+
 
 shinyServerShowResults <- function(input, output, session, context) {
-  
-  getFolderReactive = context$getFolder()
-  getPropertiesReactive = context$getProperties()
   
   output$body = renderUI({    
     mainPanel(
       HTML('<div class="container">'),
       h4("Mean and CV"),
+      # verbatimTextOutput("dataOutput"),
       plotOutput("plot"),
       HTML('</div>')
     )
-  })
+  }) 
+  
+  getFolderReactive = context$getFolder()
+  getDataReactive = context$getData()
+  getPropertiesReactive = context$getProperties()
+  
+  plotValue = reactiveValues()
+  invalidateValue = reactiveValues(inv=TRUE)
   
   observe({
     getFolder = getFolderReactive$value
-    if (is.null(getFolder)) return()
+    if (is.null(getFolder)) return(NULL)
     folder = getFolder()
     
+    getData=getDataReactive$value
+    if (is.null(getData)) return(NULL)
+    data = getData()
+    
     getProperties=getPropertiesReactive$value
-    if (is.null(getProperties)) return()
+    if (is.null(getProperties)) return(NULL)
     properties = getProperties()
-     
+    
+    aRunDataFile = paste(folder, "\\runData.rda", sep = "");
+    load(aRunDataFile);
+    aResult = aRunDataList$result
+    xAxisMode = getPropertyValue(properties, "X-Axis Mode")
+    
+    if (xAxisMode == "Auto"){
+      xmin = 0
+      xmax =  max(as.numeric(aResult$m), na.rm = TRUE)
+    } 
+    else {
+      xmin = getPropertyValue(properties, "Xmin", TRUE)
+      xmax = getPropertyValue(properties, "Xmax", TRUE)
+    }
+    yAxisMode = getPropertyValue(properties, "Y-Axis Mode")
+    if (yAxisMode == "Auto"){
+      ymin = 0
+      ymax = 1
+    } 
+    else {
+      ymin = getPropertyValue(properties, "Ymin", TRUE)
+      ymax = getPropertyValue(properties, "Ymax", TRUE)
+    }  
+    
+    aResult = subset(aResult, m > 0)
+    pHigh = getPropertyValue(properties,"EM fit, high signal presence", TRUE )
+    aResult = data.frame(aResult, bHigh = aResult$presence > pHigh)
+    showFit = getPropertyValue(properties, "Fit Error Model") == "Yes"
+    
+    if (showFit){
+      aResult = ddply(aResult, ~color, .fun = cvFit)
+    }
+    
+    logx = getPropertyValue(properties, "X axis scaling") == "Log"
+    if (logx) {
+      aResult$m = log2(aResult$m)
+    }
+    
+    if (showFit & any(!is.nan(aResult$yFit))){
+      prt = ggplot(aResult, aes(x = m, y = cv, colour = presence, shape = bHigh)) + geom_point()
+      prt = prt + ylim(c(ymin, ymax))
+      prt = prt + geom_line(aes(x = m, y = yFit), colour = "red")
+      prt = prt + facet_wrap(~label)
+    } else {
+      prt = ggplot(aResult, aes(x = m, y = cv) ) + geom_point(colour = "blue")
+      prt = prt + ylim(c(ymin, ymax))
+      prt = prt + facet_wrap(~c)
+    }
+    
+    # plotValue$prt = prt
+    
+    #     output$dataOutput = renderText({
+    #       class(prt)
+    #     })
+    
     output$plot = renderPlot({
-      print(showResults(properties, folder))
+      print(prt)
     })
-  }) 
+    
+  })
+  
+  #   output$plot = renderPlot({
+  #     inv = isolate({invalidateValue$inv})
+  #     if (inv) {
+  #       invalidateLater(1000, session)
+  #       isolate({invalidateValue$inv = FALSE})
+  #     }
+  #     print(plotValue$prt)
+  #   })
+  
+  
 }
+#
+
+
+

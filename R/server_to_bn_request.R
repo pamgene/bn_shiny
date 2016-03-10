@@ -29,11 +29,15 @@ BNReactiveRequest = R6Class(
   inherit = BNRequest,
   public = list(
     reactiveValues = NULL,
+    domain = NULL,
     initialize = function(){
       super$initialize()
+      self$domain = getDefaultReactiveDomain()
       self$id = newRequestId()
       self$type = self$getType()
       self$reactiveValues = reactiveValues()
+      # withReactiveDomain(self$domain, {self$reactiveValues = reactiveValues()})
+      
     },
     getType = function() stop('subclass responsability')
   )
@@ -122,9 +126,18 @@ BNReactiveResponse = R6Class(
   public = list(
     processOn = function(bnSession){
       request = removeRegisteredRequest(self$id)
+      shinysession = request$domain
       value = self$getValue()
-      request$reactiveValues$value=function() value
-      shiny:::flushReact()
+      if (is.null(shinysession)){
+        request$reactiveValues$value=function() value
+        shiny:::flushReact()
+      } else {
+        withReactiveDomain(shinysession, {
+          request$reactiveValues$value=function() value
+          shiny:::flushReact()
+          shinysession$flushOutput()
+        })
+      }
     },
     getValue = function() self$value
   ),
