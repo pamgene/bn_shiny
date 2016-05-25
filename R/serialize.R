@@ -70,6 +70,6 @@ object.asTSON <- function(result){
   } else if (class(result) == "AnnotatedDataFrame"){
     list <- annotated.data.frame.asTSON(result)
   } else {
-    stop("result : unknown class ")
+    stop("object.asTSON failed : unknown class ")
   }
 }

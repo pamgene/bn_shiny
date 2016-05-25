@@ -188,16 +188,11 @@ BNSessionContext  <- R6Class(
     toTson = function() list(workflowId=tson.scalar(self$workflowId), stepId=tson.scalar(self$stepId), contextId=tson.scalar(self$contextId)),
     getProperties = function() self$processRequest(BNGetPropertiesRequest$new()), 
     getPropertiesAsMap = function() self$processRequest(BNGetPropertiesAsMapRequest$new()), 
-    
     getFolder = function() self$processRequest(BNGetFolderRequest$new()),
-    
-    getCurveFitParams = function(){
-      stop('BNSessionContext getCurveFitParams not yet implemented')
-    },
+    # getCurveFitParams = function()self$processRequest(BNGetCurveFitParamsRequest$new()),
     getData = function() self$processRequest(BNGetDataRequest$new()),
-    error = function(error){
-      self$session$sendContextError(self$contextId, error)
-    },
+    error = function(error) self$session$sendContextError(self$contextId, error),
+    
     setOrders = function(rowOrder,colOrder){
       request = BNSetOrderRequest$new()
       orders = list()
@@ -207,8 +202,18 @@ BNSessionContext  <- R6Class(
       request$value = orders
       self$processRequest(request)
     },
-    setResult = function(data){
-      stop('BNSessionContext setResult not yet implemented')
+    setResult = function(result){
+      if (is.null(result)){
+        stop('BNSessionContext setResult : result cannot be null')
+      }
+      if (class(result) == "data.frame" || class(result) == "AnnotatedDataFrame"){
+        request = BNSetResultRequest$new()
+        request$value = result
+        self$processRequest(request)
+      }  else {
+        stop("BNSessionContext setResult : a data.frame or an AnnotatedDataFrame is expected")
+      }
+      
     }
   )
 )
@@ -243,3 +248,5 @@ BNResponse = R6Class(
   "BNResponse",
   inherit = BNMessage
 )
+
+

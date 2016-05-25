@@ -96,6 +96,16 @@ BNGetDataRequest = R6Class(
   )
 )
 
+# BNGetCurveFitParamsRequest = R6Class(
+#   'BNGetCurveFitParamsRequest',
+#   inherit = BNContextRequest,
+#   public = list(
+#     getType = function() 'BNGetCurveFitParamsRequest'
+#   )
+# )
+
+
+
 BNSetOrderRequest = R6Class(
   'BNSetOrderRequest',
   inherit = BNContextRequest,
@@ -113,6 +123,27 @@ BNSetOrderRequest = R6Class(
     value = function(value){
       if (missing(value)) return(self$json$value)
       else self$json$value <- value
+    }
+  )
+)
+
+BNSetResultRequest = R6Class(
+  'BNSetResultRequest',
+  inherit = BNContextRequest,
+  public = list(
+    getType = function() 'BNSetResultRequest',
+    processContext = function(context){
+      if (!inherits(context, "BNSessionContext"))
+        stop("BNContextRequest : 'context' is not a BNSessionContext object.")
+      self$context = context$toTson()
+      context$session$sendRequest(self$json)
+      # no response is expected so don't register the request
+    } 
+  ),
+  active = list(
+    value = function(value){
+      if (missing(value)) return(self$json$value)
+      else self$json$value <- object.asTSON(value)
     }
   )
 )
