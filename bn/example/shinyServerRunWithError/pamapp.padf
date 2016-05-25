@@ -1,1 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?><pamAppDef author="Alexandre Maurel" description="Example : shinyServerRun" mainCategory="Shiny app example" name="Example : shinyServerRun" type="RDataStepOperator" version="1"  />
+<?xml version="1.0" encoding="UTF-8"?><pamAppDef author="Alexandre Maurel" description="Example : shinyServerRunWithError" mainCategory="Shiny app example" name="Example : shinyServerRunWithError" type="RDataStepOperator" version="1"  />

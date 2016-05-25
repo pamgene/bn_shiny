@@ -71,7 +71,7 @@ shinyServerRun <- function(input, output, session, context) {
           Sys.sleep(0.3)
         }
       })
-      result = plyr::ddply(pData(data), c("colSeq", "rowSeq"), summarize, AVG = mean(value))
+      result = plyr::ddply(pData(data), c("colSeq", "rowSeq"), plyr::summarize, AVG = mean(value))
       context$setResult(result)
       renderPrint({ result })()
     })
