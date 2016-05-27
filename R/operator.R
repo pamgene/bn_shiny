@@ -131,7 +131,7 @@ Operator <- R6Class(
     shinyServerRun = function(input, output, session, context){
       fun = self$env$shinyServerRun
       if (is.null(fun)){
-        context$error(Error$new(500,"operator.shinyServerRun.missing","shinyServerRun function is undefined"))
+        stop("operator.shinyServerRun.missing")
       } else {
         fun(input, output, session, context)
       }
@@ -139,7 +139,7 @@ Operator <- R6Class(
     shinyServerShowResults = function(input, output, session, context){
       fun = self$env$shinyServerShowResults
       if (is.null(fun)){
-        context$error(Error$new(500,"operator.shinyServerShowResults.missing","shinyServerShowResults function is undefined"))
+        stop("operator.shinyServerShowResults.missing")
       } else {
         fun(input, output, session, context)
       }
@@ -147,13 +147,12 @@ Operator <- R6Class(
     runApp = function(context){
       fun = self$env$runApp
       if (is.null(fun)){
-        context$error(Error$new(500,"operator.runApp.missing","runApp function is undefined"))
+        context$error("operator.runApp.missing")
       } else {
-        tryCatch({
-          fun(context)
-        }, error = function(e) {
-          context$error(Error$new(500,"operator.runApp.runtime.error",toString(e)))
-        })
+        tryCatch(fun(context), error = function(e){
+          context$error(e)
+          stop(e)
+          })
       }
     }
   )
