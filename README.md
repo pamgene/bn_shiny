@@ -1,7 +1,7 @@
 #BN Shiny server
 
-## Instal
+## Install
 
 ```
-devtools::install_bitbucket("amaurel/bn_shiny")
+devtools::install_bitbucket("bnoperator/bn_shiny")
 ```
