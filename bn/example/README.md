@@ -4,15 +4,20 @@
 Clone the git, then copy paste the example folder in BN\bin\config\InstalledPamApps\PamApps 
 
 # App
-## shinyServerRun
+## Shiny operator
+### shinyServerRun
 
 A simple example of a shiny app operator.
 
-## shinyServerRunWithError
+### shinyServerRunWithError
 
 Show how to send an error to BN.
 
-## crosstab_shinyApp_SetOrder
+## Crosstab shiny app
+
+Note : the R file of the app must be named shinyApp.R
+
+### crosstab_shinyApp_SetOrder
 
 A simple example of a crosstab shiny app.
 Show how to change crosstab row and col order.
