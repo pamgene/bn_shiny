@@ -5,7 +5,7 @@ data.frame.asTSON <- function(df){
     if (is.factor(c)){
       return (list(kind=tson.character("factor"), values=as.integer(c), labels=levels(c)))
     } else if (is.logical(c)){
-      return (list(kind=tson.chracter("bool"), values=as.integer(c)))
+      return (list(kind=tson.character("bool"), values=as.integer(c)))
     } else {
       return (as.vector(c))
     }
