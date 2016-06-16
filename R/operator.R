@@ -1,73 +1,37 @@
+createOperatorFromPackage = function(packageName){
+  packageEnv = as.environment( paste0('package:', packageName))
+  return(Operator$new(packageEnv))
+}
+
 Operator <- R6Class(
   "Operator",
   public = list(
-    env = NA,
-    initialize = function(){
-      
+    env = NULL,
+    
+    initialize = function(env){
+      self$env = env
     },
+    
     sourceCode = function(lines){
       self$env = new.env(parent = globalenv())
       fun <- sourceUTF8FromCode(lines, envir = self$env)
     },
-    showResultWithContext = function(context){
-      fun = self$env$showResults
-      if (is.null(fun)){
-        return (NULL)
-      } else {
-        fun(properties=context$getProperties(), folder=context$getFolder())
-        return (NULL)
-      }
-    },
-    dataFrameOperatorWithContext = function(context){
-#       fun = self$env$dataFrameOperator
-#       if (is.null(fun)){
-#         return (NULL)
-#       } else {
-#         data = context$getData()
-#         print(data)
-#         properties=context$getProperties()
-#         print(properties)
-#         folder=context$getFolder()
-#         print(folder)
-#         result = fun(data=data, properties=properties, folder=folder)
-#         print("result")
-#         print(result)
-#         return (result)
-#       }
-    },
-    curveFitOperatorWithContext = function(context){
-#       fun = self$env$curveFitOperatorFunction
-#       if (is.null(fun)){
-#         return (NULL)
-#       } else {
-#         
-#         param = context$getCurveFitParams()
-#         xValues = param$xValues
-#         properties = param$properties
-#         data = as.data.frame(t(param$data))
-#         
-#         fit <- function(x) {
-#           yValues <- try( fun(xValues , x ,  properties) , silent = TRUE)
-#           if(inherits(yValues, "try-error")){
-#             yValues <- xValues+NaN
-#           }  
-#           return (yValues)
-#         } 
-#         list = as.double(unlist(lapply(data, fit)))
-#         
-#         return (list)
-#       }
-    },
-     capability = function(){
+    
+#     setShinyServerRun = function(fun) self$env$shinyServerRun = fun
+#     setShinyServerShowResults = function(fun) self$env$shinyServerShowResults = fun
+#     setCurveFitOperatorFunction = function(fun) self$env$curveFitOperatorFunction = fun
+#     setDataFrameOperator = function(fun) self$env$dataFrameOperator = fun
+#     setOperatorProperties = function(fun) self$env$operatorProperties = fun
+    
+    capability = function(){
       answer = list()
-       
       
       if (!is.null(self$env$shinyServerRun)){
         answer[["run"]] = tson.scalar("shiny")
       } else if (!is.null(self$env$dataFrameOperator)){
         answer[["run"]] = tson.scalar("default")
       }
-       
+      
       if (!is.null(self$env$shinyServerShowResults)){
         answer[["showResults"]] = tson.scalar("shiny")
       } else if (!is.null(self$env$showResults)){
@@ -78,6 +42,7 @@ Operator <- R6Class(
       }
       return(answer)
     },
+    
     curveFittingTable = function(param){
       if (!inherits(param, "CurveFittingTableParam"))
         stop("'param' is not a CurveFittingTableParam object.")
@@ -85,7 +50,7 @@ Operator <- R6Class(
       xValues = param$xValues
       properties = param$properties
       data = as.data.frame(t(param$data))
-       
+      
       fit <- function(x) {
         yValues <- try( curveFitOperatorFunction(xValues , x ,  properties) , silent = TRUE)
         if(inherits(yValues, "try-error")){
@@ -97,18 +62,22 @@ Operator <- R6Class(
       
       return (list)
     },
+    
     dataFrameOperator = function(operatorParam){
- 
+      
       if (!inherits(operatorParam, "DataFrameOperatorParam"))
         stop("'operatorParam' is not a DataFrameOperatorParam object.")
       fun = self$env$dataFrameOperator
       if (is.null(fun)){
         return (NULL)
       } else {
-        dataFrame <- fun(operatorParam$data, properties=operatorParam$properties,folder=operatorParam$folder)
+        dataFrame <- fun(operatorParam$data,
+                         properties=operatorParam$properties,
+                         folder=operatorParam$folder)
         return (dataFrame)
       }
     },
+    
     operatorProperties = function(){
       fun = self$env$operatorProperties
       if (is.null(fun)){
@@ -117,6 +86,7 @@ Operator <- R6Class(
         return (fun())
       }
     },
+    
     showResults = function(showResultParam){
       if (!inherits(showResultParam, "ShowResultParam"))
         stop("'showResultParam' is not a ShowResultParam object.")
@@ -128,6 +98,7 @@ Operator <- R6Class(
         return (NULL)
       }
     },
+    
     shinyServerRun = function(input, output, session, context){
       fun = self$env$shinyServerRun
       if (is.null(fun)){
@@ -136,6 +107,7 @@ Operator <- R6Class(
         fun(input, output, session, context)
       }
     },
+    
     shinyServerShowResults = function(input, output, session, context){
       fun = self$env$shinyServerShowResults
       if (is.null(fun)){
@@ -144,6 +116,7 @@ Operator <- R6Class(
         fun(input, output, session, context)
       }
     },
+    
     runApp = function(context){
       fun = self$env$runApp
       if (is.null(fun)){
@@ -152,7 +125,7 @@ Operator <- R6Class(
         tryCatch(fun(context), error = function(e){
           context$error(e)
           stop(e)
-          })
+        })
       }
     }
   )

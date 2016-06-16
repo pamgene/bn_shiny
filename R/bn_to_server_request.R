@@ -53,7 +53,7 @@ BNAddOperatorRequest = R6Class(
   inherit = BNOperatorRequest,
   public =list(
     processOn = function(bnSession){
-      operator <- Operator$new()
+      operator = Operator$new()
       operator$sourceCode(self$code)
       bnSession$addOperator(self$operatorId, operator)
       bnSession$sendVoid(self$id)

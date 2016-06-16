@@ -1,64 +1,49 @@
-#' startBNShiny
-#' @import rtson R6
-#' @export
-startBNShiny = function() {
-  options(shiny.launch.browser = FALSE)
-  options(shiny.maxRequestSize = 1024 ^ 3)
-  
-  bnClientUri = getOption(bn.uri, default = "http://127.0.0.1:6040")
-  
-  bn <- BNClient$new(bnClientUri)
-  operatorServerBuilder <- OperatorServerBuilderImpl$new(bn)
-  appDispatcher <-
-    OperatorServerDispatcher$new(operatorServerBuilder)
-  bnShinyApp <- ShinySessionApp$new(appDispatcher)
-  shiny::runApp(
-    bnShinyApp$shinyApp, host = getOption("shiny.host", "127.0.0.1"), port = getOption("shiny.port", default = 7042)
-  )
-}
-
 #' startBNWsShiny
 #' Use websocket for transport channel
+#' @import rtson
+#' @import R6
 #' @export
 startBNWsShiny = function() {
 
   options(shiny.launch.browser = FALSE)
   options(shiny.maxRequestSize = 1024 ^ 3)
     
-  # use bn_shiny2.R
   appDispatcher <- BNShinySessionDispatcher$new()
   bnShinyApp <- ShinySessionApp$new(appDispatcher)
   shiny::runApp(
-    bnShinyApp$shinyApp, host = getOption("shiny.host", "127.0.0.1"), port = getOption("shiny.port", default = 7042)
+    bnShinyApp$shinyApp,
+    host = getOption("shiny.host", "127.0.0.1"),
+    port = getOption("shiny.port", default = 7042)
   )
 }
 
-
-#' SessionShinyServer
-#'
-SessionShinyServer =
-  R6Class("SessionShinyServer",
-          public = list(
-            shinyServer = function(input, output, session) {
-              
-            }
-          ))
-
+#' @export
+startBNTestShiny = function(packageName, sessionType='run', bnMessageHandler=NULL) {
+  
+  library(Biobase)
+  
+  library(packageName, character.only = TRUE)
+   
+  options(shiny.maxRequestSize = 1024 ^ 3)
+  
+  appDispatcher <- BNTestShinySessionDispatcher$new(createOperatorFromPackage(packageName),
+                                                    sessionType = sessionType,
+                                                    bnMessageHandler=bnMessageHandler)
+  bnShinyApp <- ShinySessionApp$new(appDispatcher)
+  shiny::runApp(
+    bnShinyApp$shinyApp,
+    host = getOption("shiny.host", "127.0.0.1"),
+    port = getOption("shiny.port", default = 7142)
+  )
+}
+ 
 #' ShinySessionDispatcher
 #'
 ShinySessionDispatcher = R6Class(
   "ShinySessionDispatcher",
   public = list(
     dispatch = function(input, output, session) {
-      sessionShinyServer <- self$getSessionShinyServer(session)
-      if (!is.null(sessionShinyServer)) {
-        if (!inherits(sessionShinyServer, "SessionShinyServer"))
-          stop("'sessionShinyServer' is not a SessionShinyServer object.")
-        sessionShinyServer$shinyServer(input, output, session)
-      }
-    },
-    getSessionShinyServer = function(session) {
-      return (SessionShinyServer$new())
+      stop('subclass responsability')
     }
   )
 )

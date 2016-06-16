@@ -5,7 +5,7 @@ responseFromJson = function(json){
   } else if (identical(type, "BNAnnotatedDataFrameReactiveResponse")){
     return(BNAnnotatedDataFrameReactiveResponse$new(json=json))
   }   else {
-    stop(paste0("unknown response type : ", type))  
+    stop(paste0("responseFromJson : unknown response type : ", type))  
   }
 }
 
@@ -22,7 +22,29 @@ registerRequest = function(request){
 }
 
 getRegisteredRequest = function(requestId) GlobalRequests$get(requestId)
-removeRegisteredRequest = function(requestId) GlobalRequests$remove(requestId)
+removeRegisteredRequest = function(requestId) {
+  GlobalRequests$remove(requestId)
+}
+
+reactiveRequestFromJson = function(json){
+  type = json[["type"]]
+   
+  if (type == "BNGetFolderRequest"){
+    return(BNGetFolderRequest$new(json=json))
+  } else if (type ==  "BNGetPropertiesRequest"){
+    return(BNGetPropertiesRequest$new(json=json))
+  } else if (type ==  "BNGetPropertiesAsMapRequest"){
+    return(BNGetPropertiesAsMapRequest$new(json=json))
+  } else if (type == "BNGetDataRequest"){
+    return(BNGetDataRequest$new(json=json))
+  } else if (type ==  "BNSetOrderRequest"){
+    return(BNSetOrderRequest$new(json=json))
+  } else if (type == "BNSetResultRequest"){
+    return(BNSetResultRequest$new(json=json))
+  }   else {
+    stop(paste0("reactiveRequestFromJson : unknown reactiveRequest type : ", type))  
+  }
+}
 
 BNReactiveRequest = R6Class(
   "BNReactiveRequest",
@@ -30,16 +52,24 @@ BNReactiveRequest = R6Class(
   public = list(
     reactiveValues = NULL,
     domain = NULL,
-    initialize = function(){
-      super$initialize()
-      self$domain = getDefaultReactiveDomain()
-      self$id = newRequestId()
-      self$type = self$getType()
-      self$reactiveValues = reactiveValues()
-      # withReactiveDomain(self$domain, {self$reactiveValues = reactiveValues()})
-      
+    initialize = function(json=NULL){
+      if (is.null(json)){
+        super$initialize()
+        self$domain = getDefaultReactiveDomain()
+        self$id = newRequestId()
+        self$type = self$getType()
+        self$reactiveValues = reactiveValues()
+      } else {
+        super$initialize(json=json)
+      }
     },
     getType = function() stop('subclass responsability')
+  ),
+  active = list(
+    id = function(value){
+      if (missing(value)) return(self$json$id)
+      else self$json$id <- value
+    }
   )
 )
 
@@ -47,13 +77,13 @@ BNContextRequest = R6Class(
   'BNContextRequest',
   inherit = BNReactiveRequest,
   public = list(
-    getType = function() 'BNGetFolderRequest',
+    getType = function() 'BNContextRequest',
     processContext = function(context){
       if (!inherits(context, "BNSessionContext"))
         stop("BNContextRequest : 'context' is not a BNSessionContext object.")
       self$context = context$toTson()
-      context$session$sendRequest(self$json)
       registerRequest(self)
+      context$session$sendRequest(self$json)
     }
   ),
   active = list(
@@ -176,6 +206,10 @@ BNReactiveResponse = R6Class(
     value = function(value){
       if (missing(value)) return(self$json$value)
       else self$json$value <- value
+    },
+    id = function(value){
+      if (missing(value)) return(self$json$id)
+      else self$json$id <- value
     }
   )
 )
