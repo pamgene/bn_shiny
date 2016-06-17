@@ -18,6 +18,8 @@ requestFromJson = function(json){
     return(BNFittingTableRequest$new(json=json))
   } else if (identical(type, "BNRunAppRequest")){
     return(BNRunAppRequest$new(json=json))
+  } else if (identical(type, "BNAddAppRequest")){
+    return(BNAddAppRequest$new(json=json))
   }  else {
     stop(paste0("unknown request type : ", type))  
   }
@@ -53,9 +55,7 @@ BNAddOperatorRequest = R6Class(
   inherit = BNOperatorRequest,
   public =list(
     processOn = function(bnSession){
-      operator = Operator$new()
-      operator$sourceCode(self$code)
-      bnSession$addOperator(self$operatorId, operator)
+      bnSession$addSourceCodeOperator(self$operatorId, self$code)
       bnSession$sendVoid(self$id)
     }
   ),
@@ -63,6 +63,23 @@ BNAddOperatorRequest = R6Class(
     code = function(value){
       if (missing(value)) return(self$json$code)
       else self$json$code <- value
+    }
+  )
+)
+
+BNAddAppRequest = R6Class(
+  "BNAddAppRequest",
+  inherit = BNOperatorRequest,
+  public =list(
+    processOn = function(bnSession){
+      bnSession$addApp(self$operatorId, self$pamAppDefinition)
+      bnSession$sendVoid(self$id)
+    }
+  ),
+  active = list(
+    pamAppDefinition = function(value){
+      if (missing(value)) return(PamAppDefinition$new(json=self$json$pamAppDefinition))
+      else self$json$pamAppDefinition <- value$toJson()
     }
   )
 )

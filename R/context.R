@@ -41,6 +41,7 @@ BNSessionContext  <- R6Class(
       request$value = orders
       self$processRequest(request)
     },
+    
     setResult = function(result){
       if (is.null(result)){
         stop('BNSessionContext setResult : result cannot be null')
@@ -52,7 +53,8 @@ BNSessionContext  <- R6Class(
       }  else {
         stop("BNSessionContext setResult : a data.frame or an AnnotatedDataFrame is expected")
       }
-      
     }
+    
+    
   )
 )

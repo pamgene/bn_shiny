@@ -6,8 +6,10 @@ BNSession = R6Class(
     sessionId = NULL,
     ws = NULL,
     operatorByIds = NULL,
+    endPointByIds = NULL,
     
     initialize = function(sessionDispatch, sessionId, ws) {
+      self$endPointByIds = Map$new()
       self$operatorByIds = Map$new()
       self$sessionDispatch = sessionDispatch
       self$sessionId = sessionId
@@ -15,6 +17,14 @@ BNSession = R6Class(
       self$ws$onMessage(self$onWSMessage)
     },
     
+    registerEndPoint = function(endPointId, fun){
+      self$endPointByIds$set(endPointId, fun)
+    },
+    
+    removeEndPoint = function(endPointId){
+      self$endPointByIds$remove(endPointId)
+    },
+     
     dispatchSiny = function(input, output, session) {
        
       contextId = NULL
@@ -22,6 +32,13 @@ BNSession = R6Class(
       
       tryCatch({
         query <- isolate(parseQueryString(session$clientData$url_search))
+        
+        endPointId = query$endPointId
+        if (!is.null(endPointId))  {
+          endpoint = self$endPointByIds$get(endPointId)
+          return (endpoint(input, output, session, self))
+        }
+        
         contextId = query$contextId
         if (is.null(contextId)) stop("BNSession : contextId is required")
       }, error = function(e) {
@@ -53,7 +70,7 @@ BNSession = R6Class(
     
     onWSMessage = function(binary, message) {
       tryCatch({
-        onMessage(fromTSON(message))
+        self$onMessage(fromTSON(message))
       }, error = function(e) {
         self$sendNoContextError(e)
       })
@@ -134,13 +151,24 @@ BNSession = R6Class(
                              type=tson.scalar("void") ))
     },
     
+    addApp = function(operatorId, pamAppDefinition){
+      app = PamApp$new(operatorId, pamAppDefinition)
+      app$initializeWithSession(self)
+      self$addOperator(operatorId, app)
+    },
+    
+    addSourceCodeOperator = function(operatorId, sourceCode){
+      operator = Operator$new(operatorId)
+      operator$sourceCode(sourceCode)
+    },
+    
     addOperator = function(operatorId, operator){
       self$operatorByIds$set(operatorId, operator)
     },
     
     getOperator = function(operatorId){
       return(self$operatorByIds$get(operatorId))
-    }
+    } 
     
   )
 )

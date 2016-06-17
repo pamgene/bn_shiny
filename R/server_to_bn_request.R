@@ -64,14 +64,43 @@ BNReactiveRequest = R6Class(
       }
     },
     getType = function() stop('subclass responsability')
+  ) 
+)
+
+ 
+BNOpenUrlRequest = R6Class(
+  'BNOpenUrlRequest',
+  inherit = BNRequest,
+  public = list(
+    initialize = function(url, dialog=FALSE){
+      super$initialize()
+      self$type = self$getType()
+      self$id = newRequestId()
+      self$url = url
+      self$dialog = dialog
+    },
+    getType = function() 'BNOpenUrlRequest'
   ),
   active = list(
-    id = function(value){
-      if (missing(value)) return(self$json$id)
-      else self$json$id <- value
+    url = function(value){
+      if (missing(value)) return(self$json$url)
+      else self$json$url <- tson.scalar(value)
+    },
+    dialog = function(value){
+      if (missing(value)) return(self$json$dialog)
+      else self$json$dialog <- tson.scalar(value)
     }
   )
 )
+
+BNCloseUrlRequest = R6Class(
+  'BNCloseUrlRequest',
+  inherit = BNOpenUrlRequest,
+  public = list(
+    getType = function() 'BNCloseUrlRequest'
+  )
+)
+
 
 BNContextRequest = R6Class(
   'BNContextRequest',

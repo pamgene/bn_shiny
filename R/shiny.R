@@ -1,7 +1,7 @@
 #' startBNWsShiny
-#' Use websocket for transport channel
 #' @import rtson
 #' @import R6
+#' @import XML
 #' @export
 startBNWsShiny = function() {
 

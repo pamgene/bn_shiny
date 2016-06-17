@@ -2,13 +2,11 @@
 % Please edit documentation in R/shiny.R
 \name{startBNWsShiny}
 \alias{startBNWsShiny}
-\title{startBNWsShiny
-Use websocket for transport channel}
+\title{startBNWsShiny}
 \usage{
 startBNWsShiny()
 }
 \description{
 startBNWsShiny
-Use websocket for transport channel
 }
 
