@@ -55,6 +55,7 @@ BNAddOperatorRequest = R6Class(
   inherit = BNOperatorRequest,
   public =list(
     processOn = function(bnSession){
+       
       bnSession$addSourceCodeOperator(self$operatorId, self$code)
       bnSession$sendVoid(self$id)
     }
@@ -72,8 +73,10 @@ BNAddAppRequest = R6Class(
   inherit = BNOperatorRequest,
   public =list(
     processOn = function(bnSession){
-      bnSession$addApp(self$operatorId, self$pamAppDefinition)
-      bnSession$sendVoid(self$id)
+      
+      bnSession$addApp(self$operatorId, self$pamAppDefinition, self)
+      # response will be send async, once setup complete
+      # bnSession$sendVoid(self$id)
     }
   ),
   active = list(
@@ -103,10 +106,10 @@ BNHasOperatorRequest = R6Class(
   inherit = BNOperatorRequest,
   public =list(
     processOn = function(bnSession){
-      operator = bnSession$getOperator(self$operatorId)
+      flag = bnSession$hasOperator(self$operatorId)
       response = list(id=tson.scalar(self$id),
                       type=tson.scalar(self$type),
-                      hasOperator=tson.scalar(!is.null(operator)))
+                      hasOperator=tson.scalar(flag))
       bnSession$sendResponse(response)
     }
   )
@@ -117,10 +120,15 @@ BNOperatorCapabilityRequest = R6Class(
   inherit = BNOperatorRequest,
   public =list(
     processOn = function(bnSession){
+       
       operator = bnSession$getOperator(self$operatorId)
+       
+      operator$capability()
+      
       response = list(id=tson.scalar(self$id),
                       type=tson.scalar(self$type),
                       capability=operator$capability())
+       
       bnSession$sendResponse(response)
     }
   )

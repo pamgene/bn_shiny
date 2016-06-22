@@ -95,9 +95,21 @@ BNOpenUrlRequest = R6Class(
 
 BNCloseUrlRequest = R6Class(
   'BNCloseUrlRequest',
-  inherit = BNOpenUrlRequest,
+  inherit = BNRequest,
   public = list(
+    initialize = function(url){
+      super$initialize()
+      self$type = self$getType()
+      self$id = newRequestId()
+      self$url = url
+    },
     getType = function() 'BNCloseUrlRequest'
+  ),
+  active = list(
+    url = function(value){
+      if (missing(value)) return(self$json$url)
+      else self$json$url <- tson.scalar(value)
+    } 
   )
 )
 

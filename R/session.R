@@ -94,6 +94,7 @@ BNSession = R6Class(
     },
     
     processRequest = function(request){
+       
       tryCatch({
         request$processOn(self)
       }, error = function(e) {
@@ -151,23 +152,31 @@ BNSession = R6Class(
                              type=tson.scalar("void") ))
     },
     
-    addApp = function(operatorId, pamAppDefinition){
+    addApp = function(operatorId, pamAppDefinition, request){
       app = PamApp$new(operatorId, pamAppDefinition)
-      app$initializeWithSession(self)
-      self$addOperator(operatorId, app)
+      app$initializeWithSession(self, request)
+      self$addOperator(app)
     },
     
     addSourceCodeOperator = function(operatorId, sourceCode){
       operator = Operator$new(operatorId)
       operator$sourceCode(sourceCode)
+      self$addOperator(operator)
     },
     
-    addOperator = function(operatorId, operator){
-      self$operatorByIds$set(operatorId, operator)
+    addOperator = function(operator){
+      self$operatorByIds$set(operator$id, operator)
     },
     
     getOperator = function(operatorId){
-      return(self$operatorByIds$get(operatorId))
+      operator = self$operatorByIds$get(operatorId)
+      if (is.null(operator)) stop(paste('Cannot find operator operatorId = ', operatorId))
+      return(operator)
+    },
+    
+    hasOperator = function(operatorId){
+      operator = self$operatorByIds$get(operatorId)
+      return(!is.null(operator))
     } 
     
   )

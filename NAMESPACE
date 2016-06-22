@@ -2,8 +2,10 @@
 
 export(BNMessageHandler)
 export(PamAppDefinition)
+export(parseTags)
 export(startBNTestShiny)
 export(startBNWsShiny)
+export(tagsToString)
 import(R6)
 import(XML)
 import(rtson)

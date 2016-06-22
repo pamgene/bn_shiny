@@ -8,7 +8,7 @@ test_that("Client addOperator", {
   testClient = TestClient$new("http://127.0.0.1:6042")
   text <- readLines("../../bn/operator/demo_operator.R",encoding="UTF-8")
   code = paste(text, collapse="\n")
-  testClient$addOperator("demo_operator", code)
+  testClient$addOperator(code)
   testClient$getProperties("demo_operator")
   
   properties = list()

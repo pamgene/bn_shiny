@@ -1,4 +1,19 @@
 #' @export
+parseTags = function(str){
+  list = unlist(strsplit(str, "[;]"))
+  list = lapply(list, function(each){
+    return(substr(each, 2, length(list)-1))
+  })
+  return(as.character(list))
+}
+
+#' @export
+tagsToString = function(list){
+  str = paste0('_',paste(list,collapse='_;_'), '_')
+  return(str)
+}
+
+#' @export
 PamAppDefinition = R6Class(
   "PamAppDefinition",
   public = list(

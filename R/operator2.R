@@ -4,21 +4,21 @@ PamApp = R6Class(
   public =list(
     
     pamAppDefinition = NULL,
+    addAppRequest = NULL,
     
     initialize = function(id, pamAppDefinition){
       super$initialize(id)
       self$pamAppDefinition = pamAppDefinition
     },
     
-    initializeWithSession = function(bnSession){
+    initializeWithSession = function(bnSession, request){
       if (!dir.exists(self$getAppLib())){
+        self$addAppRequest = request
         self$registerInstallEnpoint(bnSession)
         req = BNOpenUrlRequest$new(self$getInstallUrl(bnSession), dialog=TRUE)
         bnSession$sendRequest(req$json)
-        self$install()
-        req = BNCloseUrlRequest$new(self$getInstallUrl(bnSession))
-        bnSession$sendRequest(req)
-        self$unregisterInstallEnpoint(bnSession)
+      } else {
+        bnSession$sendVoid(request$id)
       }
     },
     
@@ -93,18 +93,68 @@ PamApp = R6Class(
     },
     
     getInstallUrl = function(bnSession){
-      return (paste0('?sessionId=',bnSession$sessionId,'&endpointId=',self$getInstallEndPointId()))
+      return (paste0('?sessionId=',bnSession$sessionId,'&endPointId=',self$getInstallEndPointId()))
     },
     
     shinyInstallApp = function(input, output, session, bnSession){
+      
+      values = reactiveValues()
+      values$setupDone = 0
+      values$installing = 0
+      
       output$body = renderUI({
         mainPanel(
           h4("Installing package, please wait ..."),
           p(paste0("package : " , self$pamAppDefinition$package)),
           p(paste0("version : " , self$pamAppDefinition$version)),
-          p(paste0("repository : " , self$pamAppDefinition$repository))
+          p(paste0("repository : " , self$pamAppDefinition$repository)),
+          verbatimTextOutput("done")
         )
       })
+      
+      observe({
+        if (isolate(values$installing) == 0){
+          invalidateLater(100, session)
+          values$installing = 1
+          return()
+        }
+      })
+      
+      output$done = renderText({
+        if (values$installing == 0){
+          return()
+        }
+         
+        
+        tryCatch({
+         
+          self$install()
+          if (!is.null(self$addAppRequest)){
+             
+            req = BNCloseUrlRequest$new(self$getInstallUrl(bnSession))
+            bnSession$sendRequest(req$json)
+            self$unregisterInstallEnpoint(bnSession)
+              
+            # return call of initializeWithSession
+            bnSession$sendVoid(self$addAppRequest$id)
+            self$addAppRequest = NULL
+             
+          }
+        }, error = function(e) {
+          traceback(e)
+          if (!is.null(self$addAppRequest)){
+            bnSession$sendError(self$addAppRequest$id, e)
+          } else {
+            bnSession$sendNoContextError(e)
+          }
+          
+          self$unregisterInstallEnpoint(bnSession)
+          stop(e)
+        } )
+        renderPrint({ 'done' })()
+      })
+      
+      
     },
     
     install = function(){
