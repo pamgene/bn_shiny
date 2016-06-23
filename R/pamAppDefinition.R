@@ -163,11 +163,7 @@ PamAppDefinition = R6Class(
       hasCurveFitOperatorFunction = exists( "curveFitOperatorFunction" , envir = packageEnv )
       
       if (hasShinyServerRun || hasDataFrameOperator){
-        if (hasOperatorProperties){
-          self$type = 'RDataStepOperator'
-        } else {
-          stop('Function operatorProperties is required')
-        }
+        self$type = 'RDataStepOperator'
       } else if (hasShinyServerShowResults) {
         self$type = 'RDataScript'
       } else {
@@ -175,9 +171,11 @@ PamAppDefinition = R6Class(
       }
       
       cap = list()
+      if (hasOperatorProperties){
+        cap$operatorProperties = 'operatorProperties'
+      }
       if (hasShinyServerRun){
         cap$shinyServerRun = 'shinyServerRun'
-        
       }
       if (hasDataFrameOperator){
         cap$dataFrameOperator = 'dataFrameOperator'

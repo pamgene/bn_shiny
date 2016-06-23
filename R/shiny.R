@@ -1,5 +1,6 @@
 #' startBNWsShiny
 #' @import rtson
+#' @import bnutil
 #' @import R6
 #' @import XML
 #' @export

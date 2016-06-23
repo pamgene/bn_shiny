@@ -163,19 +163,21 @@ BNGetDataRequest = R6Class(
   'BNGetDataRequest',
   inherit = BNContextRequest,
   public = list(
+    initialize = function(json=NULL, isBiobase=FALSE){
+      super$initialize(json=json)
+      if (is.null(json)){
+        self$isBiobase = isBiobase
+      }
+    },
     getType = function() 'BNGetDataRequest'
+  ),
+  active = list(
+    isBiobase = function(value){
+      if (missing(value)) return(self$json$isBiobase)
+      else self$json$isBiobase <- value
+    }
   )
 )
-
-# BNGetCurveFitParamsRequest = R6Class(
-#   'BNGetCurveFitParamsRequest',
-#   inherit = BNContextRequest,
-#   public = list(
-#     getType = function() 'BNGetCurveFitParamsRequest'
-#   )
-# )
-
-
 
 BNSetOrderRequest = R6Class(
   'BNSetOrderRequest',
@@ -259,6 +261,17 @@ BNAnnotatedDataFrameReactiveResponse = R6Class(
   "BNAnnotatedDataFrameReactiveResponse",
   inherit = BNReactiveResponse,
   public = list(
-    getValue = function() annotated.data.frame.fromTSON(self$value)
+    request = NULL,
+    processOn = function(bnSession){
+      self$request = getRegisteredRequest(self$id)
+      super$processOn(bnSession)
+    },
+    getValue = function(){
+      if (self$request$isBiobase){
+        return(annotated.data.frame.fromTSON(self$value))
+      } else {
+        return(AnnotatedData$new(json=self$value))
+      }
+    }
   )
 )

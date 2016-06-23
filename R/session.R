@@ -52,7 +52,7 @@ BNSession = R6Class(
         operator = self$operatorByIds$get(operatorId)
         if (is.null(operator)) stop("BNSession : operator is unknown")
         
-        context = BNSessionContext$new(query$workflowId, as.integer(query$stepId), contextId, self)
+        context = BNSessionContext$new(query$workflowId, as.integer(query$stepId), contextId, self, operator)
         sessionType = query[["sessionType"]]
         
         if (identical(sessionType,"run")){
@@ -63,6 +63,7 @@ BNSession = R6Class(
           stop("sessionType must be run or show")
         }
       }, error = function(e) {
+        
         self$sendContextError(contextId, e)
         stop(e)
       })
@@ -204,18 +205,21 @@ BNTestSession = R6Class(
       contextId = 'testContextId'
       tryCatch({
          
-        context = BNSessionContext$new( 'wokflowId',
+        context = BNSessionContext$new('wokflowId',
                                        'stepId',
-                                       contextId, self)
+                                       contextId,
+                                       self,
+                                       self$operator)
          
         if (self$sessionType == "run"){
           self$operator$shinyServerRun(input, output, session, context)
         } else if (self$sessionType == "show"){
           self$operator$shinyServerShowResults(input, output, session, context)
         } else {
-          self$operator$shinyServerRun(input, output, session, context)
+          stop('Wrong session type')
         }
       }, error = function(e) {
+        traceback(e)
         self$sendContextError(contextId, e)
         stop(e)
       })
@@ -278,15 +282,6 @@ BNTestSession = R6Class(
       self$sendResponse(list(id=tson.scalar(id),
                              type=tson.scalar("void") ))
     }
-#     ,
-#     
-#     addOperator = function(operatorId, operator){
-#       self$operatorByIds$set(operatorId, operator)
-#     },
-#     
-#     getOperator = function(operatorId){
-#       return(self$operatorByIds$get(operatorId))
-#     }
     
   )
 )

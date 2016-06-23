@@ -1,6 +1,15 @@
+createOperatorFromPackage = function(packageName){
+  packageEnv = as.environment( paste0('package:', packageName))
+  return(PackageOperator$new(packageName, env=packageEnv))
+}
+
+PackageOperator  = R6Class(
+  "PackageOperator",
+  inherit = Operator)
+
 PamApp = R6Class(
   "PamApp",
-  inherit = Operator,
+  inherit = PackageOperator,
   public =list(
     
     pamAppDefinition = NULL,

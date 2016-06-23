@@ -53,6 +53,9 @@ BNTestShinySessionDispatcher = R6Class(
     messageHandler = function(msgEnveloppe){
         
       kind = msgEnveloppe[['kind']]
+      if (kind == 'contextError' || kind == 'noContextError'){
+        stop(msgEnveloppe[['error']])
+      }
       msg = msgEnveloppe[['message']]
       if (is.null(msg)) {
         stop(paste('BNTestShinySessionDispatcher : messageHandler is.null(msg) : msgEnveloppe',msgEnveloppe))
@@ -87,7 +90,7 @@ BNTestShinySessionDispatcher = R6Class(
         self$bnMessageHandler$setOrder(request$value)
         return()
       } else if (inherits(request, "BNSetResultRequest")){
-        result = annotated.data.frame.fromTSON(request$value)
+        result = AnnotatedData$new(json=request$value)
         self$bnMessageHandler$setResult(result)
         return()
       } else {

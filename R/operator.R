@@ -1,7 +1,4 @@
-createOperatorFromPackage = function(packageName){
-  packageEnv = as.environment( paste0('package:', packageName))
-  return(Operator$new(packageName, env=packageEnv))
-}
+
 
 Operator <- R6Class(
   "Operator",

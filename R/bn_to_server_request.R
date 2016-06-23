@@ -236,7 +236,7 @@ BNRunAppRequest = R6Class(
   public =list(
     processOn = function(bnSession){
       operator = bnSession$getOperator(self$operatorId)
-      context = BNSessionContext$new(self$workflowId, self$stepId, self$contextId, bnSession)
+      context = BNSessionContext$new(self$workflowId, self$stepId, self$contextId, bnSession, operator)
       bnSession$sendVoid(self$id)
       operator$runApp(context)
       shiny:::flushReact()
