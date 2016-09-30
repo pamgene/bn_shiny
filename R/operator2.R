@@ -14,6 +14,7 @@ PamApp = R6Class(
     
     pamAppDefinition = NULL,
     addAppRequest = NULL,
+     
     
     initialize = function(id, pamAppDefinition){
       super$initialize(id)
@@ -29,6 +30,10 @@ PamApp = R6Class(
       } else {
         bnSession$sendVoid(request$id)
       }
+    },
+    
+    isInstalled = function() {
+      return(dir.exists(self$getAppLib()))
     },
     
     ensureEnvLoaded = function(){
@@ -158,6 +163,7 @@ PamApp = R6Class(
           }
           
           self$unregisterInstallEnpoint(bnSession)
+          bnSession$removeOperator(self$id)
           stop(e)
         } )
         renderPrint({ 'done' })()
@@ -172,10 +178,18 @@ PamApp = R6Class(
         dir.create(lib, recursive = TRUE)
       }
      
-      devtools::with_libpaths(
-        new = self$getAppLibPath(),
-        devtools::install_bitbucket(self$pamAppDefinition$repository,
-                                    ref=self$pamAppDefinition$version))
+      tryCatch({
+        devtools::with_libpaths(
+          new = self$getAppLibPath(),
+          devtools::install_bitbucket(self$pamAppDefinition$repository,
+                                      ref=self$pamAppDefinition$version))
+      } , error = function(e) {
+        if (dir.exists(lib)){
+          unlink(lib, recursive=TRUE)
+          stop(e)
+        }
+      })
+      
     },
     
     getAppLibPath = function(){

@@ -168,6 +168,11 @@ BNSession = R6Class(
     addOperator = function(operator){
       self$operatorByIds$set(operator$id, operator)
     },
+    removeOperator = function(operatorId){
+      if (hasOperator(operatorId)){
+        self$operatorByIds$remove(operatorId)
+      }
+    },
     
     getOperator = function(operatorId){
       operator = self$operatorByIds$get(operatorId)

@@ -57,6 +57,7 @@ BNSessionContext  <- R6Class(
       if (inherits(self$operator, "PackageOperator")){
         if (inherits(result, "AnnotatedData") || inherits(result, "data.frame")){
           request = BNSetResultRequest$new()
+          request$validate(result)
           request$value = result
           self$processRequest(request)
         }  else {

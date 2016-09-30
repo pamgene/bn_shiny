@@ -211,12 +211,44 @@ BNSetResultRequest = R6Class(
       self$context = context$toTson()
       context$session$sendRequest(self$json)
       # no response is expected so don't register the request
-    } 
+    },
+    validate = function(result){
+      df = result
+      if (inherits(result, "AnnotatedData") || inherits(result, "data.frame")){
+        df = result$data
+      } else if (inherits(result, "data.frame")){
+        df = result
+      } else {
+        stop("BNSetResultRequest : wrong object type : result must be an AnnotatedData or a data.frame object")
+      }
+      
+      if (!("colSeq" %in% colnames(df))){
+        stop('BNSetResultRequest : column colSeq is required')
+      }
+      
+      if (!("rowSeq" %in% colnames(df))){
+        stop('BNSetResultRequest : column rowSeq is required')
+      }
+      
+      
+      if (min(df[["colSeq"]]) < 1){
+        stop('BNSetResultRequest : colSeq values must be greater or equals to 1')
+      }
+      if (min(df[["rowSeq"]]) < 1){
+        stop('BNSetResultRequest : rowSeq values must be greater or equals to 1')
+      }
+#       if ( !is.integer(colSeq)) {
+#         warning("BNSetResultRequest : colSeq is not an integer")
+#       }
+      
+    }
   ),
   active = list(
     value = function(value){
       if (missing(value)) return(self$json$value)
-      else self$json$value <- object.asTSON(value)
+      else {
+        self$json$value <- object.asTSON(value)
+      }
     }
   )
 )

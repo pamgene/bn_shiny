@@ -93,6 +93,15 @@ BNOperatorPropertiesRequest = R6Class(
   public =list(
     processOn = function(bnSession){
       operator = bnSession$getOperator(self$operatorId)
+      props = operator$operatorProperties()
+      
+#       props = lapply(props, function(prop){
+#         
+#         
+#         
+#       })
+      
+      
       response = list(id=tson.scalar(self$id),
                       type=tson.scalar(self$type),
                       properties=operator$operatorProperties())

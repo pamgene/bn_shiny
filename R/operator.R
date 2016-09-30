@@ -11,6 +11,10 @@ Operator <- R6Class(
       self$env = env
     },
     
+    isInstalled = function() {
+      return(TRUE)
+    },
+    
     sourceCode = function(lines){
       self$env = new.env(parent = globalenv())
       fun <- sourceUTF8FromCode(lines, envir = self$env)
@@ -82,7 +86,9 @@ Operator <- R6Class(
       if (is.null(fun)){
         return (list())
       } else {
-        return (fun())
+        propList = fun()
+        
+        return (propList)
       }
     },
     
