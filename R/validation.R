@@ -17,12 +17,13 @@ validateAnnotatedDataResult = function(annotatedResult){
   
   # validate the data.frame
   validateDataFrameResult(data)
-   
+  
   # ensure that qts are double
   qtColNames = annotatedResult$qtColumnNames
   
   for (cname in qtColNames){
-    if (!is.double(data[[cname]])) stop(paste('Result validation : qt columns must be of type double :', cname))
+    c = data[[cname]]
+    if (!is.double(c)) stop(paste('Result validation : qt columns must be of type double :', cname, 'class', class(c)))
   }
 }
 
@@ -34,10 +35,10 @@ validateDataFrameResult = function(df){
   for (cname in cnames){
     c = df[[cname]]
     if (!(is.factor(c) || is.character(c) || is.double(c))){
-      stop(paste('Result validation : columns must be of type (factor | character | double) :',cname))
+      stop(paste('Result validation : columns must be of type (factor | character | double) :',cname, 'class', class(c)))
     }
   }
-   
+  
   if (!("colSeq" %in% colnames(df))){
     stop('Result validation : column colSeq is required')
   }
