@@ -36,7 +36,13 @@ validateDataFrameResult = function(df){
     c = df[[cname]]
     if (!(is.factor(c) || is.character(c) || is.double(c))){
       stop(paste('Result validation : columns must be of type (factor | character | double) :',cname, 'class', class(c)))
+    } 
+    if (is.double(c)){
+      if(any(is.na(c) & !is.nan(c))){
+        stop(paste('Result validation : columns of type double must not contains NA :',cname))
+      } 
     }
+    
   }
   
   if (!("colSeq" %in% colnames(df))){
@@ -54,5 +60,7 @@ validateDataFrameResult = function(df){
   if (min(df[["rowSeq"]]) < 1){
     stop('Result validation : rowSeq values must be greater or equals to 1')
   }
+  
+  
 }
 
