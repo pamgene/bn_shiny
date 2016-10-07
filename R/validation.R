@@ -32,7 +32,7 @@ validateDataFrameResult = function(df){
   # ensure that column are factor or character or double
   cnames = colnames(df)
   for (cname in cnames){
-    c = data[[cname]]
+    c = df[[cname]]
     if (!(is.factor(c) || is.character(c) || is.double(c))){
       stop(paste('Result validation : columns must be of type (factor | character | double) :',cname))
     }
