@@ -2,6 +2,9 @@
 
 export(BNMessageHandler)
 export(PamAppDefinition)
+export(backwardCheckAnnotatedDataResult)
+export(backwardCheckDataFrameResult)
+export(backwardCheckResult)
 export(parseTags)
 export(startBNTestShiny)
 export(startBNWsShiny)
