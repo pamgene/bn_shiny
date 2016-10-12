@@ -50,6 +50,13 @@ BNSessionContext  <- R6Class(
       self$processRequest(request)
     },
     
+    saveFile = function(file=NULL, object){
+      save(file = file, object)
+    },
+    loadFile = function(file){
+      load(file)
+    },
+    
     setResult = function(result){
       if (is.null(result)){
         stop('BNSessionContext setResult : result cannot be null')
