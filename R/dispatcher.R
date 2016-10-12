@@ -75,6 +75,8 @@ BNTestShinySessionDispatcher = R6Class(
       json = NULL
       if (inherits(request, "BNGetFolderRequest")){
         json = list(value=self$bnMessageHandler$getFolder())
+      } else if (inherits(request, "BNGetRunFolderRequest")){
+        json = list(value=self$bnMessageHandler$getRunFolder())
       } else if (inherits(request, "BNGetPropertiesRequest")){
         json = list(value=self$bnMessageHandler$getProperties())
       } else if (inherits(request, "BNGetPropertiesAsMapRequest")){
@@ -118,6 +120,7 @@ BNMessageHandler = R6Class(
   public = list(
     
     getFolderHandler = NULL,
+    getRunFolderHandler = NULL,
     getPropertiesHandler = NULL,
     getPropertiesAsMapHandler = NULL,
     getDataHandler = NULL,
@@ -128,6 +131,11 @@ BNMessageHandler = R6Class(
     
     getFolder = function(){
       if (!is.null(self$getFolderHandler)) return(self$getFolderHandler())
+      return (getwd())
+    },
+    
+    getRunFolder = function(){
+      if (!is.null(self$getRunFolderHandler)) return(self$getRunFolderHandler())
       return (getwd())
     },
     

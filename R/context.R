@@ -34,6 +34,7 @@ BNSessionContext  <- R6Class(
     getProperties = function() self$processRequest(BNGetPropertiesRequest$new()), 
     getPropertiesAsMap = function() self$processRequest(BNGetPropertiesAsMapRequest$new()), 
     getFolder = function() self$processRequest(BNGetFolderRequest$new()),
+    getRunFolder = function() self$processRequest(BNGetRunFolderRequest$new()),
     # getCurveFitParams = function()self$processRequest(BNGetCurveFitParamsRequest$new()),
     getData = function() {
       return(self$processRequest(BNGetDataRequest$new(isBiobase=!inherits(self$operator, "PackageOperator"))))

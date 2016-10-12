@@ -31,6 +31,8 @@ reactiveRequestFromJson = function(json){
    
   if (type == "BNGetFolderRequest"){
     return(BNGetFolderRequest$new(json=json))
+  } else if (type ==  "BNGetRunFolderRequest"){
+    return(BNGetRunFolderRequest$new(json=json))
   } else if (type ==  "BNGetPropertiesRequest"){
     return(BNGetPropertiesRequest$new(json=json))
   } else if (type ==  "BNGetPropertiesAsMapRequest"){
@@ -140,6 +142,14 @@ BNGetFolderRequest = R6Class(
   inherit = BNContextRequest,
   public = list(
     getType = function() 'BNGetFolderRequest'
+  )
+)
+
+BNGetRunFolderRequest = R6Class(
+  'BNGetRunFolderRequest',
+  inherit = BNContextRequest,
+  public = list(
+    getType = function() 'BNGetRunFolderRequest'
   )
 )
 
