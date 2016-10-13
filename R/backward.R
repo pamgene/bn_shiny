@@ -1,27 +1,32 @@
 #' @export
 backwardCheckResult = function(result){
-  if (inherits(result, "AnnotatedData")){
+  if (inherits(result, "AnnotatedDataFrame")){
     result = backwardCheckAnnotatedDataResult(result)
   } else if (inherits(result, "data.frame")){
     result = backwardCheckDataFrameResult(result)
   } else {
     stop("Result validation : wrong object type : result must be an AnnotatedData or a data.frame object")
   }
+  return(result)
 }
 
 #' @export
 backwardCheckAnnotatedDataResult = function(result){
   metaData = varMetadata(result)
+  df = pData(result)
   bQtCols = metaData$groupingType == "QuantitationType"
-  for(cname in colnames(result)[bQtCols]){
-    result[cname] = na2nan(result[cname])
+  for(cname in colnames(df)[bQtCols]){
+    df[[cname]] = na2nan(df[[cname]])
   }
-  bAnnCols = metatData$groupingType == "Spot"| metaData$groupingType == "Array"
-  for(cname in colnames(result)[bAnnCols]){
-    if(is.numeric(result[cname])){
-      result[cname] = na2nan(result[cname])
+  bAnnCols = metaData$groupingType == "Spot"| metaData$groupingType == "Array"
+  for(cname in colnames(df)[bAnnCols]){
+    if (all( is.na(df[[cname]]) )){
+      df[[cname]] = na2nan(df[[cname]])
+    } else if (is.numeric(df[[cname]]) ){
+      df[[cname]] = na2nan(df[[cname]])
     }
   }
+  pData(result) = df
   return(result)
 }
 
@@ -36,5 +41,7 @@ backwardCheckDataFrameResult = function(result){
 }
 
 na2nan = function(x){
-  x[is.na(x)] = NaN
+  bna = is.na(x)
+  x[bna] = NaN
+  return(x)
 }

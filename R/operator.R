@@ -77,6 +77,7 @@ Operator <- R6Class(
         dataFrame <- fun(operatorParam$data,
                          properties=operatorParam$properties,
                          folder=operatorParam$folder)
+        dataFrame = backwardCheckResult(dataFrame)
         return (dataFrame)
       }
     },
