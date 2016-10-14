@@ -74,6 +74,7 @@ BNSessionContext  <- R6Class(
       } else {
         if (inherits(result, "data.frame") || inherits(result, "AnnotatedDataFrame")){
           request = BNSetResultRequest$new()
+          result = backwardCheckResult(result)
           request$value = result
           self$processRequest(request)
         }  else {
