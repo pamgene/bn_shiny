@@ -1,7 +1,7 @@
 Package: bnshiny
 Type: Package
 Title: Shiny for BioNavigator
-Version: 2.17
+Version: 2.18
 Date: 2015-11-13
 Author: Alexandre Maurel
 Maintainer: Alexandre Maurel <alexandre.maurel@gmail.com>
@@ -10,8 +10,8 @@ License: What license is it under?
 Suggests:
     testthat
 Imports:
+    R6,
     rtson,
     bnutil,
-    shiny,
-    httr
+    shiny
 RoxygenNote: 5.0.1
