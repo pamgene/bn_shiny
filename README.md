@@ -10,5 +10,5 @@ devtools::install_bitbucket("bnoperator/bn_shiny")
 
 
 ```
-bntools::deployGitPackage('https://bitbucket.org/bnoperator/bn_shiny.git', '2.18')
+bntools::deployGitPackage('https://bitbucket.org/bnoperator/bn_shiny.git', '2.20')
 ```
