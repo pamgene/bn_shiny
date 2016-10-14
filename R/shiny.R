@@ -1,3 +1,5 @@
+library(bnutil)
+
 #' startBNWsShiny
 #' @import rtson
 #' @import bnutil

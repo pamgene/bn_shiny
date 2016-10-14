@@ -14,7 +14,6 @@ PamApp = R6Class(
     
     pamAppDefinition = NULL,
     addAppRequest = NULL,
-     
     
     initialize = function(id, pamAppDefinition){
       super$initialize(id)
@@ -22,7 +21,7 @@ PamApp = R6Class(
     },
     
     initializeWithSession = function(bnSession, request){
-      if (!dir.exists(self$getAppLib())){
+      if (!self$isInstalled){
         self$addAppRequest = request
         self$registerInstallEnpoint(bnSession)
         req = BNOpenUrlRequest$new(self$getInstallUrl(bnSession), dialog=TRUE)
@@ -33,24 +32,16 @@ PamApp = R6Class(
     },
     
     isInstalled = function() {
-      return(dir.exists(self$getAppLib()))
+      pkg = self$pamAppDefinition$package
+      if (!requireNamespace(pkg, quietly = TRUE)) {
+        return(FALSE)
+      }
+      return(numeric_version(self$pamAppDefinition$version) <= numeric_version(packageVersion(pkg)))
     },
     
     ensureEnvLoaded = function(){
       if (is.null(self$env)){
-        pkg = self$pamAppDefinition$package
-        if (isNamespaceLoaded(pkg)){
-          currentVersion = currentPackageVersion(pkg)
-          if (currentVersion != self$pamAppDefinition$version){
-            detach_package(pkg, character.only = TRUE)
-            if (isNamespaceLoaded(pkg)){
-              stop(paste0('Failed to unload package ', pkg, ' version ', currentVersion))
-            }
-            self$env = loadNamespace(pkg, lib.loc = self$getAppLibPath())
-          }
-        } else {
-          self$env = loadNamespace(pkg, lib.loc = self$getAppLibPath())
-        }
+        self$env = loadNamespace(pkg)
       }
     },
     
@@ -138,21 +129,21 @@ PamApp = R6Class(
         if (values$installing == 0){
           return()
         }
-         
+        
         
         tryCatch({
-         
+          
           self$install()
           if (!is.null(self$addAppRequest)){
-             
+            
             req = BNCloseUrlRequest$new(self$getInstallUrl(bnSession))
             bnSession$sendRequest(req$json)
             self$unregisterInstallEnpoint(bnSession)
-              
+            
             # return call of initializeWithSession
             bnSession$sendVoid(self$addAppRequest$id)
             self$addAppRequest = NULL
-             
+            
           }
         }, error = function(e) {
           traceback(e)
@@ -168,40 +159,38 @@ PamApp = R6Class(
         } )
         renderPrint({ 'done' })()
       })
-      
-      
     },
     
     install = function(){
-      lib = self$getAppLib()
-      if (!dir.exists(lib)){
-        dir.create(lib, recursive = TRUE)
-      }
-     
       tryCatch({
-        devtools::with_libpaths(
-          new = self$getAppLibPath(),
-          devtools::install_bitbucket(self$pamAppDefinition$repository,
-                                      ref=self$pamAppDefinition$version))
-      } , error = function(e) {
-        if (dir.exists(lib)){
-          unlink(lib, recursive=TRUE)
-          stop(e)
+        pkg = self$pamAppDefinition$package
+        if (isNamespaceLoaded(pkg)){
+          currentVersion = currentPackageVersion(pkg)
+          detach_package(pkg, character.only = TRUE)
+          if (isNamespaceLoaded(pkg)){
+            stop(paste0('failed to unload package ', pkg, ' version ', currentVersion))
+          }
         }
+        # go and grab latest version
+        install.packages(self$pamAppDefinition$package)
+        # check if correct version is installed
+        if (!isInstalled){
+          msg = paste('required version ',
+                      self$pamAppDefinition$version, 
+                      'installed version',
+                      packageVersion(self$pamAppDefinition$package))
+          stop(msg)
+        }
+      } , error = function(e) {
+        msg = paste('Failed to install package',
+                    self$pamAppDefinition$package,
+                    'version',
+                    self$pamAppDefinition$version ,
+                    ':',
+                    toString(e))
+        stop(msg)
       })
       
-    },
-    
-    getAppLibPath = function(){
-      return(unlist(c(self$getAppLib(), .libPaths())))
-    },
-    
-    getAppLib = function(){
-      baseDirectory = getOption("bn.app.package.lib", paste0(getwd(), '/apps'))
-      lib = paste0(baseDirectory,
-                   '/', self$pamAppDefinition$repository,
-                   '/', self$pamAppDefinition$version)
-      return(lib)
-    }
+    } 
   )
 )
