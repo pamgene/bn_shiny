@@ -36,7 +36,7 @@ PamApp = R6Class(
       if (!requireNamespace(pkg, quietly = TRUE)) {
         return(FALSE)
       }
-      return(numeric_version(self$pamAppDefinition$version) <= numeric_version(packageVersion(pkg)))
+      return(compareVersion(packageVersion(pkg) , self$pamAppDefinition$version) >= 0)
     },
     
     ensureEnvLoaded = function(){
