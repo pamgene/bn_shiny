@@ -21,7 +21,7 @@ PamApp = R6Class(
     },
     
     initializeWithSession = function(bnSession, request){
-      if (!self$isInstalled){
+      if (!self$isInstalled()){
         self$addAppRequest = request
         self$registerInstallEnpoint(bnSession)
         req = BNOpenUrlRequest$new(self$getInstallUrl(bnSession), dialog=TRUE)
@@ -41,7 +41,7 @@ PamApp = R6Class(
     
     ensureEnvLoaded = function(){
       if (is.null(self$env)){
-        self$env = loadNamespace(pkg)
+        self$env = loadNamespace(self$pamAppDefinition$package)
       }
     },
     
@@ -174,7 +174,7 @@ PamApp = R6Class(
         # go and grab latest version
         install.packages(self$pamAppDefinition$package)
         # check if correct version is installed
-        if (!isInstalled){
+        if (!isInstalled()){
           msg = paste('required version ',
                       self$pamAppDefinition$version, 
                       'installed version',
