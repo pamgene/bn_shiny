@@ -174,7 +174,7 @@ PamApp = R6Class(
         # go and grab latest version
         install.packages(self$pamAppDefinition$package)
         # check if correct version is installed
-        if (!isInstalled()){
+        if (!self$isInstalled()){
           msg = paste('required version ',
                       self$pamAppDefinition$version, 
                       'installed version',
