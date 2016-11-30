@@ -169,7 +169,7 @@ BNSession = R6Class(
       self$operatorByIds$set(operator$id, operator)
     },
     removeOperator = function(operatorId){
-      if (hasOperator(operatorId)){
+      if (self$hasOperator(operatorId)){
         self$operatorByIds$remove(operatorId)
       }
     },

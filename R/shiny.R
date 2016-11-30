@@ -1,8 +1,13 @@
+library(rtson)
+library(bnutil)
+library(R6)
+library(shiny)
+
 #' startBNWsShiny
+#' @import shiny
 #' @import rtson
 #' @import bnutil
 #' @import R6
-#' @import XML
 #' @export
 startBNWsShiny = function() {
 
