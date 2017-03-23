@@ -63,13 +63,13 @@ BNSessionContext  <- R6Class(
         stop('BNSessionContext setResult : result cannot be null')
       }
       if (inherits(self$operator, "PackageOperator")){
-        if (inherits(result, "AnnotatedData") || inherits(result, "data.frame")){
+        if (inherits(result, "AnnotatedData") || inherits(result, "data.frame")|| inherits(result, "Cube")){
           request = BNSetResultRequest$new()
           request$validate(result)
           request$value = result
           self$processRequest(request)
         }  else {
-          stop("BNSessionContext setResult :  a data.frame or AnnotatedData is expected")
+          stop("BNSessionContext setResult :  a data.frame or AnnotatedData or Cube is expected")
         }
       } else {
         if (inherits(result, "data.frame") || inherits(result, "AnnotatedDataFrame")){
