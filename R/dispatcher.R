@@ -92,8 +92,16 @@ BNTestShinySessionDispatcher = R6Class(
         self$bnMessageHandler$setOrder(request$value)
         return()
       } else if (inherits(request, "BNSetResultRequest")){
-        result = AnnotatedData$new(json=request$value)
-        self$bnMessageHandler$setResult(result)
+        if (request$value$kind == 'AnnotatedData'){
+          result = AnnotatedData$new(json=request$value)
+          self$bnMessageHandler$setResult(result)
+        } else if (request$value$kind == 'Cube'){
+          result = Cube$new(json=request$value)
+          self$bnMessageHandler$setResult(result)
+        } else {
+          stop('bad object kind')
+        }
+        
         return()
       } else {
         stop('BNTestShinySessionDispatcher : requestHandler unknown request')

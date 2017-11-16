@@ -1,7 +1,7 @@
 Package: bnshiny
 Type: Package
 Title: Shiny for BioNavigator
-Version: 2.23
+Version: 2.25
 Date: 2015-11-13
 Author: Alexandre Maurel
 Maintainer: Alexandre Maurel <alexandre.maurel@gmail.com>

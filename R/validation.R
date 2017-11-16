@@ -5,6 +5,8 @@ validateResult = function(result){
     validateAnnotatedDataResult(result)
   } else if (inherits(result, "data.frame")){
     validateDataFrameResult(result)
+  } else if (inherits(result, "Cube")) {
+    
   } else {
     stop("Result validation : wrong object type : result must be an AnnotatedData or a data.frame object")
   }
