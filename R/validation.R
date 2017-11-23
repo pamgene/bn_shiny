@@ -14,18 +14,27 @@ validateResult = function(result){
 
 #' @export
 validateAnnotatedDataResult = function(annotatedResult){
-  
   data = annotatedResult$data
   
   # validate the data.frame
-  validateDataFrameResult(data)
+  #validateDataFrameResult(data)
   
+  if(is.null(data$rowSeq) | is.null(data$colSeq)){
+    stop("Result validation: rowSeq and/or colSeq not found")
+  }
+  if (!is.integer(data$rowSeq) | !is.double(data$rowSeq)){
+    stop("Result validation: rowSeq must be integer or double")
+  }
+  if(!is.integer(data$colSeq) | !is.double(data$colSeq)){
+    stop("Result validation: colSeq must be integer or double")
+  }
   # ensure that qts are double
   qtColNames = annotatedResult$qtColumnNames
-  
   for (cname in qtColNames){
     c = data[[cname]]
-    if (!is.double(c)) stop(paste('Result validation : qt columns must be of type double :', cname, 'class', class(c)))
+    if (!is.double(c)){
+      stop(paste('Result validation : qt columns must be of type double :', cname, 'class', class(c)))
+    }
   }
 }
 
@@ -41,7 +50,7 @@ validateDataFrameResult = function(df){
     } 
     if (is.double(c)){
       if(any(is.na(c) & !is.nan(c))){
-        stop(paste('Result validation : columns of type double must not contains NA :',cname))
+        stop(paste('Result validation : columns of type double must not contain NA :',cname))
       } 
     }
     
