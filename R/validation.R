@@ -22,10 +22,10 @@ validateAnnotatedDataResult = function(annotatedResult){
   if(is.null(data$rowSeq) | is.null(data$colSeq)){
     stop("Result validation: rowSeq and/or colSeq not found")
   }
-  if (!is.integer(data$rowSeq) | !is.double(data$rowSeq)){
+  if (!(is.integer(data$rowSeq) | is.double(data$rowSeq))){
     stop("Result validation: rowSeq must be integer or double")
   }
-  if(!is.integer(data$colSeq) | !is.double(data$colSeq)){
+  if(!(is.integer(data$colSeq) | is.double(data$colSeq))){
     stop("Result validation: colSeq must be integer or double")
   }
   # ensure that qts are double
